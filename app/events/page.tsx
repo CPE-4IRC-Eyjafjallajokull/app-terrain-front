@@ -18,7 +18,7 @@ import { AlertCircle, CheckCircle2, Circle, Trash2 } from "lucide-react";
 
 export default function EventsPage() {
   const apiUrl = publicEnv.NEXT_PUBLIC_API_URL;
-  const { data, isConnected, error } = useSSE(`${apiUrl}/events`);
+  const { data, isConnected, error } = useSSE("/api/events");
   const [events, setEvents] = useState<{ event: string; timestamp: string }[]>(
     [],
   );
@@ -81,9 +81,13 @@ export default function EventsPage() {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                API:{" "}
+                Proxy:{" "}
                 <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                  {apiUrl}
+                  /api/events
+                </code>{" "}
+                →{" "}
+                <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
+                  {apiUrl}/events
                 </code>
               </p>
             </CardContent>

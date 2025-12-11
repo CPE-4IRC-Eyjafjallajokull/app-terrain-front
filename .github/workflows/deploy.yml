@@ -1,0 +1,113 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["Docker Build & Push"]
+    types:
+      - completed
+    branches: [main]
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+      packages: read
+    environment:
+      name: PROD
+      url: https://${{ vars.FRONT_HOST || 'front.example.com' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wait for image to propagate to GHCR
+        run: |
+          echo "⏳ Waiting 30 seconds for image to propagate to GHCR..."
+          sleep 30
+          echo "✅ Ready to deploy!"
+
+      - name: Upload compose file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ML_DEPLOY_HOST }}
+          username: ${{ secrets.ML_DEPLOY_USER }}
+          key: ${{ secrets.ML_DEPLOY_KEY }}
+          port: ${{ secrets.ML_DEPLOY_PORT }}
+          source: "compose.prod.yaml"
+          target: "/opt/mathislambert.fr/applications/app-qg-front"
+
+      - name: Remote deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          FRONT_HOST: ${{ vars.FRONT_HOST }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          KEYCLOAK_ISSUER: ${{ vars.KEYCLOAK_ISSUER }}
+          KEYCLOAK_CLIENT_ID: ${{ vars.KEYCLOAK_CLIENT_ID }}
+          KEYCLOAK_CLIENT_SECRET: ${{ secrets.KEYCLOAK_CLIENT_SECRET }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          NEXTAUTH_URL: "https://${{ vars.FRONT_HOST }}"
+        with:
+          host: ${{ secrets.ML_DEPLOY_HOST }}
+          username: ${{ secrets.ML_DEPLOY_USER }}
+          key: ${{ secrets.ML_DEPLOY_KEY }}
+          port: ${{ secrets.ML_DEPLOY_PORT }}
+          script_stop: true
+          envs: GITHUB_REF_NAME,FRONT_HOST,NEXT_PUBLIC_API_URL,KEYCLOAK_ISSUER,KEYCLOAK_CLIENT_ID,KEYCLOAK_CLIENT_SECRET,AUTH_SECRET,NEXTAUTH_URL
+          script: |
+            set -euo pipefail
+            OWNER='${{ github.repository_owner }}'
+            TAG="$GITHUB_REF_NAME"
+            INSTALL_DIR=/opt/mathislambert.fr/applications/app-qg-front
+            OWNER_LC=$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')
+
+            # Ensure network exists
+            docker network create proxy || true
+
+            # Login to GHCR
+            if [ -n '${{ secrets.GITHUB_TOKEN }}' ]; then
+              printf '%s' '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+            fi
+
+            # Set defaults
+            FRONT_HOST=${FRONT_HOST}
+            NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+            KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
+            KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+            KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+            AUTH_SECRET=${AUTH_SECRET}
+            NEXTAUTH_URL=${NEXTAUTH_URL:-https://$FRONT_HOST}
+
+            cd "$INSTALL_DIR"
+
+            # Pull latest image
+            OWNER="$OWNER_LC" IMAGE_TAG="$TAG" docker compose -f compose.prod.yaml pull
+
+            # Deploy with environment variables
+            OWNER="$OWNER_LC" IMAGE_TAG="$TAG" \
+              FRONT_HOST="$FRONT_HOST" \
+              KEYCLOAK_ISSUER="$KEYCLOAK_ISSUER" \
+              KEYCLOAK_CLIENT_ID="$KEYCLOAK_CLIENT_ID" \
+              KEYCLOAK_CLIENT_SECRET="$KEYCLOAK_CLIENT_SECRET" \
+              AUTH_SECRET="$AUTH_SECRET" \
+              NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+              NEXTAUTH_URL="$NEXTAUTH_URL" \
+              docker compose -f compose.prod.yaml up -d --remove-orphans
+
+            # Cleanup old images
+            docker image prune -f || true
+
+            echo "✅ Deployment completed successfully!"
+            echo "🌐 Frontend available at: https://$FRONT_HOST"

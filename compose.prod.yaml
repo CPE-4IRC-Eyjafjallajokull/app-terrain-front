@@ -1,0 +1,24 @@
+services:
+  front:
+    image: ghcr.io/${OWNER:-cpe-4irc-eyjafjallajokull}/app-qg-front:${IMAGE_TAG:-latest}
+    container_name: app-qg-front
+    environment:
+      - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app-qg-front.rule=Host(`${FRONT_HOST}`)"
+      - "traefik.http.routers.app-qg-front.entrypoints=websecure"
+      - "traefik.http.routers.app-qg-front.tls.certresolver=letsencrypt"
+      - "traefik.http.services.app-qg-front.loadbalancer.server.port=3000"
+
+networks:
+  proxy:
+    external: true
