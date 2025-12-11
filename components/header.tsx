@@ -5,8 +5,16 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Menu, LogOut, User } from "lucide-react";
 
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/demo", label: "Demo" },
+];
+
 export function Header() {
   const { data: session } = useSession();
+  const user = session?.user;
+  const navLinkClass =
+    "text-sm hover:text-muted-foreground transition-colors font-medium";
 
   return (
     <header className="border-b sticky top-0 z-40 bg-background">
@@ -19,34 +27,28 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-sm hover:text-muted-foreground transition-colors"
-          >
-            Home
-          </Link>
-          <Link
-            href="/events"
-            className="text-sm hover:text-muted-foreground transition-colors"
-          >
-            Events
-          </Link>
+          {navItems.map(({ href, label }) => (
+            <Link key={href} href={href} className={navLinkClass}>
+              {label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-2">
-          {session?.user ? (
+          {user ? (
             <>
               <div className="text-sm text-right hidden sm:block">
-                <p className="font-medium">{session.user.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {session.user.email}
-                </p>
+                <p className="font-medium">{user.name}</p>
+                {user.email ? (
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                ) : null}
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => signOut({ callbackUrl: "/auth/signin" })}
                 className="text-sm"
+                aria-label="Sign out"
               >
                 <LogOut className="w-4 h-4 mr-1" />
                 Sign Out
@@ -60,7 +62,12 @@ export function Header() {
               </Button>
             </Link>
           )}
-          <Button variant="ghost" size="icon" className="md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            aria-label="Open menu"
+          >
             <Menu className="w-5 h-5" />
           </Button>
         </div>
