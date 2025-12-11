@@ -6,17 +6,21 @@ import type { JWT } from "next-auth/jwt";
 // Fonction utilitaire pour rafraîchir le token
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
+    // Build URL encoded body without passing undefined values
+    const body = new URLSearchParams();
+    body.set("client_id", serverEnv.KEYCLOAK_CLIENT_ID);
+    body.set("client_secret", serverEnv.KEYCLOAK_CLIENT_SECRET);
+    body.set("grant_type", "refresh_token");
+    if (token.refreshToken) {
+      body.set("refresh_token", token.refreshToken);
+    }
+
     const response = await fetch(
       `${serverEnv.KEYCLOAK_ISSUER}/protocol/openid-connect/token`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          client_id: serverEnv.KEYCLOAK_CLIENT_ID,
-          client_secret: serverEnv.KEYCLOAK_CLIENT_SECRET,
-          grant_type: "refresh_token",
-          refresh_token: token.refreshToken,
-        }),
+        body,
       },
     );
 

@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
-export default function ErrorPage() {
+function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -72,5 +73,13 @@ export default function ErrorPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ErrorPage() {
+  return (
+    <Suspense fallback={null}>
+      <ErrorContent />
+    </Suspense>
   );
 }

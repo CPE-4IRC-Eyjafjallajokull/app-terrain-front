@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, LogIn } from "lucide-react";
+import { Suspense } from "react";
 
-export default function SignInPage() {
+function SignInContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -61,5 +62,13 @@ export default function SignInPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInContent />
+    </Suspense>
   );
 }
