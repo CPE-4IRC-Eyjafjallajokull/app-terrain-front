@@ -10,7 +10,7 @@ Copy `.env.example` to `.env.local` for local development or to `.env` for Docke
 - `KEYCLOAK_CLIENT_ID` – Keycloak client ID for this frontend
 - `KEYCLOAK_CLIENT_SECRET` – Client secret to exchange tokens
 - `AUTH_SECRET` – Secret used by NextAuth
-- `NEXT_PUBLIC_API_URL` – Base URL for the API (embedded at build time for the frontend)
+- `API_URL` – Base URL for the API (embedded at build time for the frontend)
 
 `lib/env.ts` centralizes these variables and fails fast when required server-side values are missing.
 
@@ -25,13 +25,13 @@ The app runs on [http://localhost:3000](http://localhost:3000).
 
 ## Docker
 
-Build and run with Docker Compose (reads `.env` and passes `NEXT_PUBLIC_API_URL` at build time):
+Build and run with Docker Compose (reads `.env` and passes `API_URL` at build time):
 
 ```bash
 docker compose up --build
 ```
 
-If you change `NEXT_PUBLIC_API_URL`, rebuild the image so the client bundle picks up the new value.
+If you change `API_URL`, rebuild the image so the client bundle picks up the new value.
 
 ## Useful scripts
 

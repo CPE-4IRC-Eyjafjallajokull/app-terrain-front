@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { publicEnv } from "@/lib/env.public";
+import { serverEnv } from "@/lib/env.server";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const target = `${publicEnv.NEXT_PUBLIC_API_URL}/events`;
+  const target = `${serverEnv.API_URL}/events`;
 
   try {
     const upstream = await fetch(target, {

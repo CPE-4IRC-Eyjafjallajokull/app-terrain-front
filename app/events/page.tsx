@@ -13,11 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
-import { publicEnv } from "@/lib/env.public";
 import { AlertCircle, CheckCircle2, Circle, Trash2 } from "lucide-react";
 
 export default function EventsPage() {
-  const apiUrl = publicEnv.NEXT_PUBLIC_API_URL;
   const { data, isConnected, error } = useSSE("/api/events");
   const [events, setEvents] = useState<{ event: string; timestamp: string }[]>(
     [],
@@ -80,16 +78,6 @@ export default function EventsPage() {
                   {isConnected ? "Connected to API" : "Connection lost"}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Proxy:{" "}
-                <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                  /api/events
-                </code>{" "}
-                →{" "}
-                <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                  {apiUrl}/events
-                </code>
-              </p>
             </CardContent>
           </Card>
 

@@ -53,7 +53,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           FRONT_HOST: ${{ vars.FRONT_HOST }}
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          API_URL: ${{ vars.API_URL }}
           KEYCLOAK_ISSUER: ${{ vars.KEYCLOAK_ISSUER }}
           KEYCLOAK_CLIENT_ID: ${{ vars.KEYCLOAK_CLIENT_ID }}
           KEYCLOAK_CLIENT_SECRET: ${{ secrets.KEYCLOAK_CLIENT_SECRET }}
@@ -65,7 +65,7 @@ jobs:
           key: ${{ secrets.ML_DEPLOY_KEY }}
           port: ${{ secrets.ML_DEPLOY_PORT }}
           script_stop: true
-          envs: GITHUB_REF_NAME,FRONT_HOST,NEXT_PUBLIC_API_URL,KEYCLOAK_ISSUER,KEYCLOAK_CLIENT_ID,KEYCLOAK_CLIENT_SECRET,AUTH_SECRET,NEXTAUTH_URL
+          envs: GITHUB_REF_NAME,FRONT_HOST,API_URL,KEYCLOAK_ISSUER,KEYCLOAK_CLIENT_ID,KEYCLOAK_CLIENT_SECRET,AUTH_SECRET,NEXTAUTH_URL
           script: |
             set -euo pipefail
             OWNER='${{ github.repository_owner }}'
@@ -83,7 +83,7 @@ jobs:
 
             # Set defaults
             FRONT_HOST=${FRONT_HOST}
-            NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+            API_URL=${API_URL}
             KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
             KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
             KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
@@ -102,7 +102,7 @@ jobs:
               KEYCLOAK_CLIENT_ID="$KEYCLOAK_CLIENT_ID" \
               KEYCLOAK_CLIENT_SECRET="$KEYCLOAK_CLIENT_SECRET" \
               AUTH_SECRET="$AUTH_SECRET" \
-              NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+              API_URL="$API_URL" \
               NEXTAUTH_URL="$NEXTAUTH_URL" \
               docker compose -f compose.prod.yaml up -d --remove-orphans
 

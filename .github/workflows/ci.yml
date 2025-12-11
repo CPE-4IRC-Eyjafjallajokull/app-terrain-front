@@ -6,13 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  KEYCLOAK_ISSUER: ${{ vars.KEYCLOAK_ISSUER || 'https://sso.example.com/realms/my-realm' }}
-  KEYCLOAK_CLIENT_ID: ${{ vars.KEYCLOAK_CLIENT_ID || 'frontend-client' }}
-  KEYCLOAK_CLIENT_SECRET: ${{ secrets.KEYCLOAK_CLIENT_SECRET || 'replace-with-client-secret' }}
-  AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'replace-with-random-secret' }}
-  NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:3001' }}
-
 jobs:
   lint:
     name: Prettier & ESLint

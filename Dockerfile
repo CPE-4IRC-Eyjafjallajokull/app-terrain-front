@@ -1,6 +1,4 @@
-# syntax=docker/dockerfile:1
-
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -9,8 +7,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 FROM base AS builder
-ARG NEXT_PUBLIC_API_URL=http://localhost:3001
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

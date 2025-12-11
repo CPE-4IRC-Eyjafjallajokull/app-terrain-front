@@ -47,8 +47,6 @@ jobs:
           push: false
           load: true
           tags: app-qg-front:scan
-          build-args: |
-            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:3001' }}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
