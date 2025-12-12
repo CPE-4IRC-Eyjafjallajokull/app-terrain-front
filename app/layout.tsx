@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QG Dashboard",
+  title: "Terrain Dashboard",
   description: "Emergency management dashboard with real-time events",
 };
 

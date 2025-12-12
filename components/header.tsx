@@ -23,7 +23,7 @@ export function Header() {
           href="/"
           className="text-2xl font-bold hover:opacity-80 transition-opacity"
         >
-          QG
+          Terrain
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">

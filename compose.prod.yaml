@@ -1,7 +1,7 @@
 services:
   front:
-    image: ghcr.io/${OWNER:-cpe-4irc-eyjafjallajokull}/app-qg-front:${IMAGE_TAG:-latest}
-    container_name: app-qg-front
+    image: ghcr.io/${OWNER:-cpe-4irc-eyjafjallajokull}/app-terrain-front:${IMAGE_TAG:-latest}
+    container_name: app-terrain-front
     environment:
       - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
       - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
@@ -15,10 +15,10 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app-qg-front.rule=Host(`${FRONT_HOST}`)"
-      - "traefik.http.routers.app-qg-front.entrypoints=websecure"
-      - "traefik.http.routers.app-qg-front.tls.certresolver=letsencrypt"
-      - "traefik.http.services.app-qg-front.loadbalancer.server.port=3000"
+      - "traefik.http.routers.app-terrain-front.rule=Host(`${FRONT_HOST}`)"
+      - "traefik.http.routers.app-terrain-front.entrypoints=websecure"
+      - "traefik.http.routers.app-terrain-front.tls.certresolver=letsencrypt"
+      - "traefik.http.services.app-terrain-front.loadbalancer.server.port=3000"
 
 networks:
   proxy:

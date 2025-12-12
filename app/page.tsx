@@ -20,7 +20,7 @@ export default function Home() {
         <div className="space-y-8">
           {/* Hero Section */}
           <div className="space-y-4">
-            <h2 className="text-4xl font-bold tracking-tight">Welcome to QG</h2>
+            <h2 className="text-4xl font-bold tracking-tight">Welcome to Terrain</h2>
             <p className="text-lg text-muted-foreground max-w-2xl">
               Real-time event streaming and operational dashboard for emergency
               management.

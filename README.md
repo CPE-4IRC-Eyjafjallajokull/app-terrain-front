@@ -1,4 +1,4 @@
-# app-qg-front
+# app-terrain-front
 
 Next.js application with Keycloak authentication and an SSE events stream page.
 
