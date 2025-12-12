@@ -1,13 +1,13 @@
-import { auth } from "@/auth";
+import { getToken } from "next-auth/jwt";
 import { serverEnv } from "@/lib/env.server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
-    request: Request,
+    request: NextRequest,
 ) {
-    const session = await auth();
+    const token = await getToken({ req: request, secret: serverEnv.NEXTAUTH_SECRET });
 
-    if (!session?.accessToken) {
+    if (!token?.accessToken) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -19,7 +19,7 @@ export async function POST(
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${session.accessToken}`,
+                Authorization: `Bearer ${token.accessToken}`,
             },
             body: JSON.stringify(payload),
         });

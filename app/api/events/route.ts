@@ -1,14 +1,14 @@
-import { auth } from "@/auth";
+import { getToken } from "next-auth/jwt";
 import { serverEnv } from "@/lib/env.server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const session = await auth();
+export async function GET(request: NextRequest) {
+  const token = await getToken({ req: request, secret: serverEnv.NEXTAUTH_SECRET });
 
-  if (!session?.accessToken) {
+  if (!token?.accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -17,7 +17,7 @@ export async function GET() {
   try {
     const upstream = await fetch(target, {
       headers: {
-        Authorization: `Bearer ${session.accessToken}`,
+        Authorization: `Bearer ${token.accessToken}`,
         Accept: "text/event-stream",
       },
       cache: "no-store",
