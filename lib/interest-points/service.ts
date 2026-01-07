@@ -1,6 +1,5 @@
-"use server";
-
-import { apiRequest } from "@/lib/api";
+import { fetchWithAuth } from "@/lib/auth-redirect";
+import { getErrorMessage, parseResponseBody } from "@/lib/api-response";
 import type { InterestPoint, InterestPointKind } from "./types";
 
 const FIRE_STATION_LABEL = "centre de secours";
@@ -8,24 +7,37 @@ const FIRE_STATION_LABEL = "centre de secours";
 /**
  * Fetches all interest point kinds from the API
  */
-export async function getInterestPointKinds(): Promise<InterestPointKind[]> {
-  const response = await apiRequest<InterestPointKind[]>(
-    "/interest-points/kinds",
-  );
+export async function fetchInterestPointKinds(
+  signal?: AbortSignal,
+): Promise<InterestPointKind[]> {
+  const response = await fetchWithAuth("/api/interest-points/kinds", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
 
-  if (response.error || !response.data) {
-    console.error("Failed to fetch interest point kinds:", response.error);
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  if (!Array.isArray(parsedBody.json)) {
     return [];
   }
 
-  return response.data;
+  return parsedBody.json as InterestPointKind[];
 }
 
 /**
  * Fetches the ID of the "centre de secours" kind
  */
-export async function getFireStationKindId(): Promise<string | null> {
-  const kinds = await getInterestPointKinds();
+export async function fetchFireStationKindId(
+  signal?: AbortSignal,
+): Promise<string | null> {
+  const kinds = await fetchInterestPointKinds(signal);
   const fireStationKind = kinds.find(
     (kind) => kind.label.toLowerCase() === FIRE_STATION_LABEL.toLowerCase(),
   );
@@ -36,31 +48,43 @@ export async function getFireStationKindId(): Promise<string | null> {
 /**
  * Fetches interest points by kind ID
  */
-export async function getInterestPointsByKind(
+export async function fetchInterestPointsByKind(
   kindId: string,
+  signal?: AbortSignal,
 ): Promise<InterestPoint[]> {
-  const response = await apiRequest<InterestPoint[]>(
-    `/terrain/interest-points/${kindId}`,
-  );
+  const response = await fetchWithAuth(`/api/interest-points/by-kind/${kindId}`, {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
 
-  if (response.error || !response.data) {
-    console.error("Failed to fetch interest points:", response.error);
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  if (!Array.isArray(parsedBody.json)) {
     return [];
   }
 
-  return response.data;
+  return parsedBody.json as InterestPoint[];
 }
 
 /**
  * Fetches all fire stations (centres de secours)
  */
-export async function getFireStations(): Promise<InterestPoint[]> {
-  const kindId = await getFireStationKindId();
+export async function fetchFireStations(
+  signal?: AbortSignal,
+): Promise<InterestPoint[]> {
+  const kindId = await fetchFireStationKindId(signal);
 
   if (!kindId) {
     console.error("Fire station kind not found");
     return [];
   }
 
-  return getInterestPointsByKind(kindId);
+  return fetchInterestPointsByKind(kindId, signal);
 }

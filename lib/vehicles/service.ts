@@ -1,6 +1,5 @@
-"use server";
-
-import { apiRequest } from "@/lib/api";
+import { fetchWithAuth } from "@/lib/auth-redirect";
+import { getErrorMessage, parseResponseBody } from "@/lib/api-response";
 import type {
   Vehicle,
   VehiclesListResponse,
@@ -12,57 +11,101 @@ import type { InterestPoint } from "@/lib/interest-points/types";
 /**
  * Fetches all vehicles with their complete information
  */
-export async function getVehicles(): Promise<Vehicle[]> {
-  const response = await apiRequest<VehiclesListResponse>("/qg/vehicles");
+export async function fetchVehicles(
+  signal?: AbortSignal,
+): Promise<Vehicle[]> {
+  const response = await fetchWithAuth("/api/vehicles", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
 
-  if (response.error || !response.data) {
-    console.error("Failed to fetch vehicles:", response.error);
-    return [];
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
   }
 
-  return response.data.vehicles;
+  if (
+    parsedBody.json &&
+    typeof parsedBody.json === "object" &&
+    "vehicles" in parsedBody.json
+  ) {
+    return (parsedBody.json as VehiclesListResponse).vehicles;
+  }
+
+  return [];
 }
 
 /**
  * Fetches all vehicle types
  */
-export async function getVehicleTypes(): Promise<VehicleType[]> {
-  const response = await apiRequest<VehicleType[]>("/vehicles/types");
+export async function fetchVehicleTypes(
+  signal?: AbortSignal,
+): Promise<VehicleType[]> {
+  const response = await fetchWithAuth("/api/vehicles/types", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
 
-  if (response.error || !response.data) {
-    console.error("Failed to fetch vehicle types:", response.error);
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  if (!Array.isArray(parsedBody.json)) {
     return [];
   }
 
-  return response.data;
+  return parsedBody.json as VehicleType[];
 }
 
 /**
  * Fetches all vehicle statuses
  */
-export async function getVehicleStatuses(): Promise<VehicleStatus[]> {
-  const response = await apiRequest<VehicleStatus[]>("/vehicles/statuses");
+export async function fetchVehicleStatuses(
+  signal?: AbortSignal,
+): Promise<VehicleStatus[]> {
+  const response = await fetchWithAuth("/api/vehicles/statuses", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
 
-  if (response.error || !response.data) {
-    console.error("Failed to fetch vehicle statuses:", response.error);
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  if (!Array.isArray(parsedBody.json)) {
     return [];
   }
 
-  return response.data;
+  return parsedBody.json as VehicleStatus[];
 }
 
 /**
  * Fetches all fire stations (for filter dropdown)
  */
-export async function getFireStationsForFilter(): Promise<InterestPoint[]> {
-  // First get the fire station kind ID
-  const { getFireStationKindId, getInterestPointsByKind } =
+export async function fetchFireStationsForFilter(
+  signal?: AbortSignal,
+): Promise<InterestPoint[]> {
+  const { fetchFireStationKindId, fetchInterestPointsByKind } =
     await import("@/lib/interest-points/service");
 
-  const kindId = await getFireStationKindId();
+  const kindId = await fetchFireStationKindId(signal);
   if (!kindId) {
     return [];
   }
 
-  return getInterestPointsByKind(kindId);
+  return fetchInterestPointsByKind(kindId, signal);
 }

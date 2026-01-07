@@ -1,26 +1,24 @@
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/auth";
 import { serverEnv } from "@/lib/env.server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  const token = await getToken({
-    req: request,
-    secret: serverEnv.NEXTAUTH_SECRET,
-  });
+export async function GET() {
+  const session = await auth();
+  const accessToken = session?.accessToken;
 
-  if (!token?.accessToken) {
+  if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const target = `${serverEnv.API_URL}/events`;
+  const target = `${serverEnv.API_URL}/qg/live`;
 
   try {
     const upstream = await fetch(target, {
       headers: {
-        Authorization: `Bearer ${token.accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         Accept: "text/event-stream",
       },
       cache: "no-store",

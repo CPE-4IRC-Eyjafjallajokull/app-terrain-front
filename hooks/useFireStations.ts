@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { InterestPoint } from "@/lib/interest-points/types";
-import { getFireStations } from "@/lib/interest-points/service";
+import { fetchFireStations } from "@/lib/interest-points/service";
 
 type UseFireStationsResult = {
   fireStations: InterestPoint[];
@@ -16,12 +16,12 @@ export function useFireStations(): UseFireStationsResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchFireStations = useCallback(async () => {
+  const loadFireStations = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const stations = await getFireStations();
+      const stations = await fetchFireStations();
       setFireStations(stations);
     } catch (err) {
       setError(
@@ -33,13 +33,13 @@ export function useFireStations(): UseFireStationsResult {
   }, []);
 
   useEffect(() => {
-    fetchFireStations();
-  }, [fetchFireStations]);
+    loadFireStations();
+  }, [loadFireStations]);
 
   return {
     fireStations,
     isLoading,
     error,
-    refetch: fetchFireStations,
+    refetch: loadFireStations,
   };
 }

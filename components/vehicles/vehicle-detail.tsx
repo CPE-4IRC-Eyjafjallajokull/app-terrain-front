@@ -85,10 +85,10 @@ export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
       ) {
         setIsLoadingAddress(true);
         try {
-          const result = await reverseGeocode(
-            vehicle.current_position.latitude,
-            vehicle.current_position.longitude,
-          );
+          const result = await reverseGeocode({
+            latitude: vehicle.current_position.latitude,
+            longitude: vehicle.current_position.longitude,
+          });
           setPositionAddress(result);
         } catch (error) {
           console.error("Failed to fetch address:", error);
@@ -203,25 +203,32 @@ export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
                     </div>
                   ) : positionAddress ? (
                     <div className="text-sm">
-                      {positionAddress.formatted ? (
+                      {positionAddress.display_name ? (
                         <p className="text-foreground">
-                          {positionAddress.formatted}
+                          {positionAddress.display_name}
                         </p>
-                      ) : (
+                      ) : positionAddress.address ? (
                         <>
-                          {positionAddress.address && (
+                          {(positionAddress.address.house_number ||
+                            positionAddress.address.road) && (
                             <p className="text-foreground">
-                              {positionAddress.address}
+                              {positionAddress.address.house_number}{" "}
+                              {positionAddress.address.road}
                             </p>
                           )}
-                          {(positionAddress.zipcode ||
-                            positionAddress.city) && (
+                          {(positionAddress.address.postcode ||
+                            positionAddress.address.city ||
+                            positionAddress.address.town ||
+                            positionAddress.address.village) && (
                             <p className="text-muted-foreground">
-                              {positionAddress.zipcode} {positionAddress.city}
+                              {positionAddress.address.postcode}{" "}
+                              {positionAddress.address.city ||
+                                positionAddress.address.town ||
+                                positionAddress.address.village}
                             </p>
                           )}
                         </>
-                      )}
+                      ) : null}
                     </div>
                   ) : (
                     <p className="text-xs text-muted-foreground italic">

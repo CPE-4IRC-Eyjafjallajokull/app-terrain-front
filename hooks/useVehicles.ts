@@ -9,10 +9,10 @@ import type {
 } from "@/lib/vehicles/types";
 import type { InterestPoint } from "@/lib/interest-points/types";
 import {
-  getVehicles,
-  getVehicleTypes,
-  getVehicleStatuses,
-  getFireStationsForFilter,
+  fetchVehicles,
+  fetchVehicleTypes,
+  fetchVehicleStatuses,
+  fetchFireStationsForFilter,
 } from "@/lib/vehicles/service";
 
 type UseVehiclesResult = {
@@ -64,10 +64,10 @@ export function useVehicles(): UseVehiclesResult {
     try {
       const [vehiclesData, typesData, statusesData, stationsData] =
         await Promise.all([
-          getVehicles(),
-          getVehicleTypes(),
-          getVehicleStatuses(),
-          getFireStationsForFilter(),
+          fetchVehicles(),
+          fetchVehicleTypes(),
+          fetchVehicleStatuses(),
+          fetchFireStationsForFilter(),
         ]);
 
       setVehicles(vehiclesData);

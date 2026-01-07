@@ -106,8 +106,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async session({ session, token }) {
-      // Expose only user info to the client; keep tokens server-side
+      // Expose token info to the session for API routes
       session.error = token.error;
+      session.accessToken = token.accessToken;
+      session.expiresAt = token.expiresAt;
 
       if (session.user && token.sub) {
         session.user.id = token.sub;
