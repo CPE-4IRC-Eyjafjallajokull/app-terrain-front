@@ -3,10 +3,12 @@
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Menu, LogOut, User } from "lucide-react";
+import { Menu, LogOut, User, Flame } from "lucide-react";
 
 const navItems = [
-  { href: "/", label: "Home" },
+  { href: "/", label: "Accueil" },
+  { href: "/fire-stations", label: "Centres de secours" },
+  { href: "/vehicles", label: "Véhicules" },
   { href: "/demo", label: "Demo" },
 ];
 
@@ -14,16 +16,21 @@ export function Header() {
   const { data: session } = useSession();
   const user = session?.user;
   const navLinkClass =
-    "text-sm hover:text-muted-foreground transition-colors font-medium";
+    "text-sm hover:text-primary transition-colors font-medium";
 
   return (
-    <header className="border-b sticky top-0 z-40 bg-background">
+    <header className="border-b border-primary/20 sticky top-0 z-40 bg-gradient-to-r from-primary/5 via-background to-primary/5 backdrop-blur-sm">
       <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link
           href="/"
-          className="text-2xl font-bold hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 text-2xl font-bold hover:opacity-80 transition-opacity"
         >
-          Terrain
+          <div className="p-1.5 bg-primary rounded-lg">
+            <Flame className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            SDMIS Terrain
+          </span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
