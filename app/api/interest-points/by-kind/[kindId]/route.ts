@@ -8,10 +8,6 @@ type RouteParams = {
   params: Promise<{ kindId: string }>;
 };
 
-/**
- * GET /api/interest-points/by-kind/[kindId] -> Proxifié vers /terrain/interest-points/{kindId}
- * Liste les points d'intérêt par type
- */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   const session = await auth();
   const accessToken = session?.accessToken;
@@ -21,16 +17,24 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   }
 
   const { kindId } = await params;
-  const target = `${serverEnv.API_URL}/terrain/interest-points/${kindId}`;
+  const targetUrl = new URL(
+    `${serverEnv.API_URL}/terrain/interest-points/${encodeURIComponent(kindId)}`,
+  );
+
+  console.debug(`Proxying interest-points by-kind to: ${targetUrl.toString()}`);
 
   try {
-    const upstream = await fetch(target, {
+    const upstream = await fetch(targetUrl, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
       },
       cache: "no-store",
     });
+
+    if (upstream.status === 204) {
+      return new NextResponse(null, { status: 204 });
+    }
 
     const responseBody = await upstream.text();
     const contentType =
