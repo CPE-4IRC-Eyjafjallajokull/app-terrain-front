@@ -11,9 +11,7 @@ import type { InterestPoint } from "@/lib/interest-points/types";
 /**
  * Fetches all vehicles with their complete information
  */
-export async function fetchVehicles(
-  signal?: AbortSignal,
-): Promise<Vehicle[]> {
+export async function fetchVehicles(signal?: AbortSignal): Promise<Vehicle[]> {
   const response = await fetchWithAuth("/api/vehicles", {
     method: "GET",
     credentials: "include",

@@ -49,7 +49,7 @@ export async function reverseGeocode({
     });
 
   let response = await fetchOnce();
-  
+
   // Handle rate limiting with retry
   if (response.status === 429) {
     const retryAfter = response.headers.get("retry-after");

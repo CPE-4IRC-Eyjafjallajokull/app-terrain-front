@@ -52,12 +52,15 @@ export async function fetchInterestPointsByKind(
   kindId: string,
   signal?: AbortSignal,
 ): Promise<InterestPoint[]> {
-  const response = await fetchWithAuth(`/api/interest-points/by-kind/${kindId}`, {
-    method: "GET",
-    credentials: "include",
-    cache: "no-store",
-    signal,
-  });
+  const response = await fetchWithAuth(
+    `/api/interest-points/by-kind/${kindId}`,
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      signal,
+    },
+  );
 
   const parsedBody = await parseResponseBody(response);
 
