@@ -9,7 +9,6 @@ const navItems = [
   { href: "/", label: "Accueil" },
   { href: "/fire-stations", label: "Centres de secours" },
   { href: "/vehicles", label: "Véhicules" },
-  { href: "/demo", label: "Demo" },
 ];
 
 export function Header() {

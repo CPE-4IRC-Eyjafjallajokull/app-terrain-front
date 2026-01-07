@@ -8,123 +8,89 @@ import {
 } from "@/components/ui/card";
 import { Header } from "@/components/header";
 import Link from "next/link";
-import { ArrowRight, Zap, Activity } from "lucide-react";
+import { ArrowRight, Building2, Truck, Flame } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <Header />
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-6 py-12">
         <div className="space-y-8">
           {/* Hero Section */}
-          <div className="space-y-4">
-            <h2 className="text-4xl font-bold tracking-tight">
-              Welcome to Terrain
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl">
-              Real-time event streaming and operational dashboard for emergency
-              management.
-            </p>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary/80 p-8 text-primary-foreground">
+            <div className="absolute top-0 right-0 opacity-10">
+              <Flame className="w-48 h-48 -mt-8 -mr-8" />
+            </div>
+            <div className="relative z-10 space-y-4">
+              <h1 className="text-4xl font-bold tracking-tight">
+                SDMIS Terrain
+              </h1>
+              <p className="text-lg text-primary-foreground/80 max-w-2xl">
+                Application de gestion opérationnelle pour les équipes terrain
+                du Service Départemental-Métropolitain d&apos;Incendie et de
+                Secours.
+              </p>
+            </div>
           </div>
 
           {/* Features Grid */}
           <div className="grid md:grid-cols-2 gap-6">
-            {/* SSE Events Card */}
-            <Card className="hover:shadow-md transition-shadow">
+            {/* Centres de secours */}
+            <Card className="hover:shadow-lg transition-shadow border-primary/20">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-blue-500" />
-                  <CardTitle>Real-time Events</CardTitle>
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Building2 className="w-5 h-5 text-primary" />
+                  </div>
+                  <CardTitle>Centres de Secours</CardTitle>
                 </div>
-                <CardDescription>Server-Sent Events streaming</CardDescription>
+                <CardDescription>
+                  Gestion des casernes et points d&apos;intérêt
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Monitor live event streams from the API with automatic
-                  reconnection and real-time updates.
+                  Consultez la liste des centres de secours, leurs coordonnées
+                  et localisations sur le territoire.
                 </p>
-                <Link href="/events">
+                <Link href="/fire-stations">
                   <Button className="w-full" variant="default">
-                    View Events Stream
+                    Voir les centres
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
-            {/* Health Check Card */}
-            <Card className="hover:shadow-md transition-shadow">
+            {/* Véhicules */}
+            <Card className="hover:shadow-lg transition-shadow border-primary/20">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-green-500" />
-                  <CardTitle>System Status</CardTitle>
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Truck className="w-5 h-5 text-primary" />
+                  </div>
+                  <CardTitle>Véhicules</CardTitle>
                 </div>
-                <CardDescription>API health and connectivity</CardDescription>
+                <CardDescription>
+                  Suivi en temps réel de la flotte
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Check the health and status of all connected services and
-                  systems.
+                  Suivez l&apos;état et la position des véhicules, filtrez par
+                  type, statut ou centre d&apos;affectation.
                 </p>
-                <Button className="w-full" variant="outline" disabled>
-                  Coming Soon
-                </Button>
+                <Link href="/vehicles">
+                  <Button className="w-full" variant="default">
+                    Voir les véhicules
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
-
-          {/* Quick Start */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Start</CardTitle>
-              <CardDescription>Get up and running in minutes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ol className="space-y-3 text-sm">
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-600 min-w-6">1.</span>
-                  <span>
-                    Ensure the API is running on{" "}
-                    <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                      localhost:8000
-                    </code>
-                  </span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-600 min-w-6">2.</span>
-                  <span>
-                    Navigate to the{" "}
-                    <Link
-                      href="/events"
-                      className="text-blue-600 hover:underline"
-                    >
-                      Events Stream
-                    </Link>{" "}
-                    page
-                  </span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-600 min-w-6">3.</span>
-                  <span>
-                    Watch real-time events as they arrive from the server
-                  </span>
-                </li>
-              </ol>
-            </CardContent>
-          </Card>
-
-          {/* Info */}
-          <Card className="bg-muted/50">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">
-                <strong>Tip:</strong> This is a minimal testing interface using
-                shadcn/ui components. It demonstrates SSE integration between
-                the Next.js frontend and FastAPI backend.
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </main>
     </div>
