@@ -10,7 +10,7 @@ export type ApiResponse<T> = {
  */
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<ApiResponse<T>> {
   const url = `${serverEnv.API_URL}${endpoint}`;
 
@@ -38,7 +38,9 @@ export async function apiRequest<T>(
       const errorMessage =
         json && typeof json === "object" && "error" in json
           ? String((json as { error?: unknown }).error)
-          : text || response.statusText || `Request failed (${response.status})`;
+          : text ||
+            response.statusText ||
+            `Request failed (${response.status})`;
       return { data: null, error: errorMessage };
     }
 

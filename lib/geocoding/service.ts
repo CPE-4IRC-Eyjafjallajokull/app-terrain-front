@@ -14,10 +14,10 @@ export type ReverseGeocodeResult = {
  */
 export async function reverseGeocode(
   lat: number,
-  lon: number
+  lon: number,
 ): Promise<ReverseGeocodeResult | null> {
   const response = await apiRequest<ReverseGeocodeResult>(
-    `/geo/address/reverse?lat=${lat}&lon=${lon}`
+    `/geo/address/reverse?lat=${lat}&lon=${lon}`,
   );
 
   if (response.error || !response.data) {

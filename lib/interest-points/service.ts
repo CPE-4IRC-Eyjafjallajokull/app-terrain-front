@@ -9,7 +9,9 @@ const FIRE_STATION_LABEL = "centre de secours";
  * Fetches all interest point kinds from the API
  */
 export async function getInterestPointKinds(): Promise<InterestPointKind[]> {
-  const response = await apiRequest<InterestPointKind[]>("/interest-points/kinds");
+  const response = await apiRequest<InterestPointKind[]>(
+    "/interest-points/kinds",
+  );
 
   if (response.error || !response.data) {
     console.error("Failed to fetch interest point kinds:", response.error);
@@ -25,7 +27,7 @@ export async function getInterestPointKinds(): Promise<InterestPointKind[]> {
 export async function getFireStationKindId(): Promise<string | null> {
   const kinds = await getInterestPointKinds();
   const fireStationKind = kinds.find(
-    (kind) => kind.label.toLowerCase() === FIRE_STATION_LABEL.toLowerCase()
+    (kind) => kind.label.toLowerCase() === FIRE_STATION_LABEL.toLowerCase(),
   );
 
   return fireStationKind?.interest_point_kind_id ?? null;
@@ -35,10 +37,10 @@ export async function getFireStationKindId(): Promise<string | null> {
  * Fetches interest points by kind ID
  */
 export async function getInterestPointsByKind(
-  kindId: string
+  kindId: string,
 ): Promise<InterestPoint[]> {
   const response = await apiRequest<InterestPoint[]>(
-    `/terrain/interest-points/${kindId}`
+    `/terrain/interest-points/${kindId}`,
   );
 
   if (response.error || !response.data) {

@@ -3,16 +3,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Routes that don't require authentication
-const publicRoutes = [
-  "/auth/signin",
-  "/auth/error",
-  "/api/auth",
-];
+const publicRoutes = ["/auth/signin", "/auth/error", "/api/auth"];
 
 // Check if the path matches any public route
 function isPublicRoute(pathname: string): boolean {
   return publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 }
 

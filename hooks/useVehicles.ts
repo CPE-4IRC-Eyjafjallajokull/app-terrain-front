@@ -75,9 +75,7 @@ export function useVehicles(): UseVehiclesResult {
       setVehicleStatuses(statusesData);
       setStations(stationsData);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch vehicles"
-      );
+      setError(err instanceof Error ? err.message : "Failed to fetch vehicles");
     } finally {
       setIsLoading(false);
     }

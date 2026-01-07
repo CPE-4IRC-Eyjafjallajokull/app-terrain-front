@@ -56,9 +56,8 @@ export async function getVehicleStatuses(): Promise<VehicleStatus[]> {
  */
 export async function getFireStationsForFilter(): Promise<InterestPoint[]> {
   // First get the fire station kind ID
-  const { getFireStationKindId, getInterestPointsByKind } = await import(
-    "@/lib/interest-points/service"
-  );
+  const { getFireStationKindId, getInterestPointsByKind } =
+    await import("@/lib/interest-points/service");
 
   const kindId = await getFireStationKindId();
   if (!kindId) {

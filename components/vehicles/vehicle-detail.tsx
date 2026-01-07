@@ -17,7 +17,10 @@ import {
   Loader2,
 } from "lucide-react";
 import type { Vehicle } from "@/lib/vehicles/types";
-import { reverseGeocode, type ReverseGeocodeResult } from "@/lib/geocoding/service";
+import {
+  reverseGeocode,
+  type ReverseGeocodeResult,
+} from "@/lib/geocoding/service";
 
 type VehicleDetailProps = {
   vehicle: Vehicle;
@@ -69,7 +72,8 @@ function getStatusBadge(label: string | undefined) {
 }
 
 export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
-  const [positionAddress, setPositionAddress] = useState<ReverseGeocodeResult | null>(null);
+  const [positionAddress, setPositionAddress] =
+    useState<ReverseGeocodeResult | null>(null);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 
   // Fetch address when position changes
@@ -83,7 +87,7 @@ export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
         try {
           const result = await reverseGeocode(
             vehicle.current_position.latitude,
-            vehicle.current_position.longitude
+            vehicle.current_position.longitude,
           );
           setPositionAddress(result);
         } catch (error) {
@@ -189,7 +193,7 @@ export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
                     {vehicle.current_position.longitude?.toFixed(6)}
                   </span>
                 </div>
-                
+
                 {/* Reverse geocoded address */}
                 <div className="mt-2 pl-6">
                   {isLoadingAddress ? (
@@ -200,13 +204,18 @@ export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
                   ) : positionAddress ? (
                     <div className="text-sm">
                       {positionAddress.formatted ? (
-                        <p className="text-foreground">{positionAddress.formatted}</p>
+                        <p className="text-foreground">
+                          {positionAddress.formatted}
+                        </p>
                       ) : (
                         <>
                           {positionAddress.address && (
-                            <p className="text-foreground">{positionAddress.address}</p>
+                            <p className="text-foreground">
+                              {positionAddress.address}
+                            </p>
                           )}
-                          {(positionAddress.zipcode || positionAddress.city) && (
+                          {(positionAddress.zipcode ||
+                            positionAddress.city) && (
                             <p className="text-muted-foreground">
                               {positionAddress.zipcode} {positionAddress.city}
                             </p>

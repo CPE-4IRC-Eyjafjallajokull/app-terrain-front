@@ -24,7 +24,9 @@ export function useFireStations(): UseFireStationsResult {
       const stations = await getFireStations();
       setFireStations(stations);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch fire stations");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch fire stations",
+      );
     } finally {
       setIsLoading(false);
     }

@@ -8,7 +8,13 @@ import { VehicleDetail } from "@/components/vehicles/vehicle-detail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { RefreshCw, Truck, Flame, AlertTriangle, CheckCircle } from "lucide-react";
+import {
+  RefreshCw,
+  Truck,
+  Flame,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
 
 export default function VehiclesPage() {
   const {
@@ -29,10 +35,10 @@ export default function VehiclesPage() {
 
   // Calculate stats
   const availableCount = vehicles.filter((v) =>
-    v.status?.label?.toLowerCase().includes("disponible")
+    v.status?.label?.toLowerCase().includes("disponible"),
   ).length;
   const busyCount = vehicles.filter((v) =>
-    v.status?.label?.toLowerCase().includes("intervention")
+    v.status?.label?.toLowerCase().includes("intervention"),
   ).length;
 
   return (
@@ -57,7 +63,8 @@ export default function VehiclesPage() {
                   </h1>
                 </div>
                 <p className="text-primary-foreground/80 max-w-md">
-                  Gérez et consultez l&apos;ensemble des véhicules de la flotte SDMIS
+                  Gérez et consultez l&apos;ensemble des véhicules de la flotte
+                  SDMIS
                 </p>
               </div>
               <Button
@@ -185,9 +192,7 @@ export default function VehiclesPage() {
                     <div className="text-center py-12 text-muted-foreground">
                       <Truck className="w-16 h-16 mx-auto mb-4 opacity-30" />
                       <p className="text-lg">Aucun véhicule trouvé</p>
-                      <p className="text-sm">
-                        Essayez de modifier vos filtres
-                      </p>
+                      <p className="text-sm">Essayez de modifier vos filtres</p>
                     </div>
                   ) : (
                     <ScrollArea className="h-[600px]">

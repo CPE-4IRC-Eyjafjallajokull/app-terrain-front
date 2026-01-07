@@ -30,10 +30,7 @@ export function VehicleFiltersBar({
   filteredCount,
 }: VehicleFiltersProps) {
   const hasActiveFilters =
-    filters.search ||
-    filters.stationId ||
-    filters.statusId ||
-    filters.typeId;
+    filters.search || filters.stationId || filters.statusId || filters.typeId;
 
   return (
     <div className="space-y-4">
