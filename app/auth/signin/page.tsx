@@ -28,7 +28,7 @@ function SignInContent() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl">Welcome to QG</CardTitle>
+          <CardTitle className="text-2xl">Welcome to Terrain</CardTitle>
           <CardDescription>Sign in with your Keycloak account</CardDescription>
         </CardHeader>
 
