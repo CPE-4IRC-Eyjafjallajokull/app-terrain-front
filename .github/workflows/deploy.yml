@@ -47,7 +47,7 @@ jobs:
           key: ${{ secrets.ML_DEPLOY_KEY }}
           port: ${{ secrets.ML_DEPLOY_PORT }}
           source: "compose.prod.yaml"
-          target: "/opt/mathislambert.fr/applications/app-qg-front"
+          target: "/opt/mathislambert.fr/applications/app-terrain-front"
 
       - name: Remote deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -71,7 +71,7 @@ jobs:
             set -euo pipefail
             OWNER='${{ github.repository_owner }}'
             TAG="$GITHUB_REF_NAME"
-            INSTALL_DIR=/opt/mathislambert.fr/applications/app-qg-front
+            INSTALL_DIR=/opt/mathislambert.fr/applications/app-terrain-front
             OWNER_LC=$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')
 
             # Ensure network exists
