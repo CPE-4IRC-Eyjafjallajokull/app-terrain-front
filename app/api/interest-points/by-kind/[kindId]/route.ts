@@ -10,16 +10,10 @@ type RouteParams = {
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   const session = await auth();
-  let accessToken = session?.accessToken;
+  const accessToken = session?.accessToken;
 
-  // Allow requests without auth token in development when auth is disabled
-  if (!accessToken && process.env.NEXT_PUBLIC_DISABLE_AUTH !== "1") {
+  if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // Use a dummy token for local development
-  if (!accessToken && process.env.NEXT_PUBLIC_DISABLE_AUTH === "1") {
-    accessToken = "dev-token";
   }
 
   const { kindId } = await params;

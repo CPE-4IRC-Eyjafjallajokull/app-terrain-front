@@ -8,11 +8,6 @@ export const redirectToSignIn = (): void => {
     return;
   }
 
-  // Skip redirect if auth is disabled locally
-  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === "1") {
-    return;
-  }
-
   const { pathname, href, origin } = window.location;
   if (isAuthRoute(pathname)) {
     return;

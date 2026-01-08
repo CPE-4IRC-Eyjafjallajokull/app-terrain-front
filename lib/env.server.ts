@@ -23,14 +23,6 @@ const requiredServerEnv = (key: string) => {
       return `__MISSING_${key}__`;
     }
 
-    // Allow missing Keycloak env vars when auth is disabled locally
-    if (
-      process.env.NEXT_PUBLIC_DISABLE_AUTH === "1" &&
-      key.startsWith("KEYCLOAK_")
-    ) {
-      return `__LOCAL_DEV_${key}__`;
-    }
-
     throw new Error(`Missing required environment variable: ${key}`);
   }
 

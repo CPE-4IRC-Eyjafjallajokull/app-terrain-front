@@ -53,11 +53,6 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === "1") {
-                    window.location.href = "/auth/signin";
-                    return;
-                  }
-
                   signOut({ callbackUrl: "/auth/signin" });
                 }}
                 className="text-sm"
