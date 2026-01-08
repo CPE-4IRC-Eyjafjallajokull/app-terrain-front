@@ -118,7 +118,7 @@ export async function updateVehicleStatus(
   const response = await fetchWithAuth(
     `/api/vehicles/${vehicleImmatriculation}/status`,
     {
-      method: "PATCH",
+      method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",

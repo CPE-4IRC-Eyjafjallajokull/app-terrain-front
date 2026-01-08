@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export const PATCH = (
+export const POST = (
   request: NextRequest,
   { params }: { params: Promise<{ vehicleId: string }> },
 ) => {
