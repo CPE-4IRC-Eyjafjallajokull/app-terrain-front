@@ -201,6 +201,7 @@ export function VehicleDetail({
                       const updatedVehicle = await updateVehicleStatus(
                         vehicle.immatriculation,
                         selectedStatusId,
+                        vehicleStatuses,
                       );
                       toast.success("Statut mis à jour avec succès");
                       setIsEditingStatus(false);
