@@ -261,17 +261,17 @@ export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
                     <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${
-                          vehicle.energy_level > 50
+                          vehicle.energy_level * 100 > 50
                             ? "bg-green-500"
-                            : vehicle.energy_level > 20
+                            : vehicle.energy_level * 100 > 20
                               ? "bg-yellow-500"
                               : "bg-red-500"
                         }`}
-                        style={{ width: `${vehicle.energy_level}%` }}
+                        style={{ width: `${vehicle.energy_level * 100}%` }}
                       />
                     </div>
                     <span className="text-sm font-medium">
-                      {Math.round(vehicle.energy_level)}%
+                      {Math.round(vehicle.energy_level * 100)}%
                     </span>
                   </div>
                 )}
