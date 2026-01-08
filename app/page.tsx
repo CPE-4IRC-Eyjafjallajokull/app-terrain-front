@@ -43,7 +43,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
-    if (!session?.accessToken) return;
+    if (!session?.accessToken) {
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -56,9 +59,16 @@ export default function Home() {
         fetch("/api/interest-points/kinds"),
       ]);
 
-      const vehicles = vehiclesRes.ok ? await vehiclesRes.json() : [];
-      const incidents = incidentsRes.ok ? await incidentsRes.json() : [];
-      const kinds = kindsRes.ok ? await kindsRes.json() : [];
+      if (!vehiclesRes.ok || !incidentsRes.ok || !kindsRes.ok) {
+        throw new Error("Erreur lors de la récupération des données");
+      }
+
+      const vehiclesData = await vehiclesRes.json();
+      const incidents = await incidentsRes.json();
+      const kinds = await kindsRes.json();
+
+      // Extract vehicles array from QGVehiclesListRead structure
+      const vehicles = vehiclesData?.vehicles || [];
 
       // Find fire station kind id
       const fireStationKind = Array.isArray(kinds)
@@ -75,20 +85,37 @@ export default function Home() {
         const fireStationsRes = await fetch(
           `/api/interest-points/by-kind/${fireStationKindId}`,
         );
-        fireStations = fireStationsRes.ok ? await fireStationsRes.json() : [];
+        if (fireStationsRes.ok) {
+          fireStations = await fireStationsRes.json();
+        }
       }
 
-      // Calculate stats
+      // Calculate stats - check both status.code and status.label
       const vehiclesOnIntervention = vehicles.filter(
-        (v: { status?: { code?: string } }) =>
-          v.status?.code === "INTERVENTION" ||
-          v.status?.code === "EN_ROUTE" ||
-          v.status?.code === "SUR_PLACE",
+        (v: { status?: { code?: string; label?: string } }) => {
+          const statusCode = v.status?.code?.toUpperCase();
+          const statusLabel = v.status?.label?.toUpperCase();
+          return (
+            statusCode === "INTERVENTION" ||
+            statusCode === "EN_ROUTE" ||
+            statusCode === "SUR_PLACE" ||
+            statusLabel?.includes("INTERVENTION") ||
+            statusLabel?.includes("EN ROUTE")
+          );
+        },
       ).length;
 
       const vehiclesAvailable = vehicles.filter(
-        (v: { status?: { code?: string } }) =>
-          v.status?.code === "DISPONIBLE" || v.status?.code === "AVAILABLE",
+        (v: { status?: { code?: string; label?: string } }) => {
+          const statusCode = v.status?.code?.toUpperCase();
+          const statusLabel = v.status?.label?.toUpperCase();
+          return (
+            statusCode === "DISPONIBLE" ||
+            statusCode === "AVAILABLE" ||
+            statusLabel?.includes("DISPONIBLE") ||
+            statusLabel?.includes("AVAILABLE")
+          );
+        },
       ).length;
 
       const activeIncidents = incidents.filter(
@@ -101,12 +128,24 @@ export default function Home() {
         totalVehicles: vehicles.length,
         activeIncidents,
         totalIncidents: incidents.length,
-        totalCasualties: 0, // Would require additional API calls
+        totalCasualties: 0,
         fireStationsCount: fireStations.length,
       });
     } catch (err) {
-      setError("Erreur lors du chargement des statistiques");
-      console.error(err);
+      console.error("Erreur détaillée:", err);
+      setError(
+        "Impossible de charger les statistiques. Vérifiez votre connexion.",
+      );
+      // Set default values to avoid showing "-"
+      setStats({
+        vehiclesOnIntervention: 0,
+        vehiclesAvailable: 0,
+        totalVehicles: 0,
+        activeIncidents: 0,
+        totalIncidents: 0,
+        totalCasualties: 0,
+        fireStationsCount: 0,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -216,8 +255,8 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               title="Véhicules en intervention"
-              value={stats?.vehiclesOnIntervention ?? "-"}
-              subtitle={`sur ${stats?.totalVehicles ?? "..."} véhicules`}
+              value={stats?.vehiclesOnIntervention ?? 0}
+              subtitle={`sur ${stats?.totalVehicles ?? 0} véhicules`}
               icon={Siren}
               href="/vehicles"
               color="text-red-600"
@@ -225,8 +264,8 @@ export default function Home() {
             />
             <StatCard
               title="Incidents actifs"
-              value={stats?.activeIncidents ?? "-"}
-              subtitle={`Total: ${stats?.totalIncidents ?? "..."} incidents`}
+              value={stats?.activeIncidents ?? 0}
+              subtitle={`Total: ${stats?.totalIncidents ?? 0} incidents`}
               icon={AlertTriangle}
               href="/incidents"
               color="text-orange-600"
@@ -234,7 +273,7 @@ export default function Home() {
             />
             <StatCard
               title="Véhicules disponibles"
-              value={stats?.vehiclesAvailable ?? "-"}
+              value={stats?.vehiclesAvailable ?? 0}
               subtitle={`Prêts à intervenir`}
               icon={Truck}
               href="/vehicles"
@@ -242,7 +281,7 @@ export default function Home() {
             />
             <StatCard
               title="Centres de secours"
-              value={stats?.fireStationsCount ?? "-"}
+              value={stats?.fireStationsCount ?? 0}
               subtitle="Points d'intérêt actifs"
               icon={Building2}
               href="/fire-stations"

@@ -115,8 +115,15 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    cursor: default;
   }
   body {
     @apply bg-background text-foreground;
+    cursor: default;
+  }
+  a,
+  button,
+  [role="button"] {
+    cursor: pointer;
   }
 }
