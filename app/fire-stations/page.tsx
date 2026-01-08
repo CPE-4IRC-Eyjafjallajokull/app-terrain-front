@@ -28,7 +28,7 @@ export default function FireStationsPage() {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-6 py-12">
+      <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="space-y-8">
           {/* Hero Header */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary/80 p-8 text-primary-foreground">

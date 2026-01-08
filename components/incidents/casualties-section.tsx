@@ -35,6 +35,7 @@ type CasualtiesSectionProps = {
   onEdit: (casualtyId: string, data: CasualtyUpdate) => Promise<void>;
   onDelete: (casualtyId: string) => Promise<void>;
   isSubmitting: boolean;
+  isIncidentEnded?: boolean;
 };
 
 function getStatusBadgeColor(label: string): string {
@@ -71,6 +72,7 @@ export function CasualtiesSection({
   onEdit,
   onDelete,
   isSubmitting,
+  isIncidentEnded = false,
 }: CasualtiesSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCasualty, setEditingCasualty] = useState<CasualtyDetail | null>(
@@ -127,7 +129,12 @@ export function CasualtiesSection({
                 </Badge>
               )}
             </CardTitle>
-            <Button size="sm" onClick={handleOpenAddForm}>
+            <Button
+              size="sm"
+              onClick={handleOpenAddForm}
+              disabled={isIncidentEnded}
+              title={isIncidentEnded ? "L'incident est terminé" : undefined}
+            >
               <Plus className="w-4 h-4 mr-1" />
               Ajouter
             </Button>

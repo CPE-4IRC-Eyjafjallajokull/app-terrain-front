@@ -44,7 +44,7 @@ export default function IncidentsPage() {
       <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="space-y-8">
           {/* Hero Header */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 to-red-500 p-8 text-white">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary/80 p-8 text-primary-foreground">
             <div className="absolute top-0 right-0 opacity-10">
               <Flame className="w-48 h-48 -mt-8 -mr-8" />
             </div>
@@ -58,7 +58,7 @@ export default function IncidentsPage() {
                     Incidents
                   </h1>
                 </div>
-                <p className="text-white/80 max-w-md">
+                <p className="text-primary-foreground/80 max-w-md">
                   Suivez les interventions en cours et gérez les victimes
                 </p>
               </div>

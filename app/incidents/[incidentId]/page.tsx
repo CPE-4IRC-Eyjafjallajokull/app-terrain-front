@@ -208,6 +208,7 @@ export default function IncidentDetailPage({ params }: PageProps) {
               onEdit={editCasualty}
               onDelete={removeCasualty}
               isSubmitting={isSubmitting}
+              isIncidentEnded={!!incident?.ended_at}
             />
           </div>
         )}
