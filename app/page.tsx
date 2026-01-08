@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Siren,
 } from "lucide-react";
+import type { InterestPoint } from "@/lib/interest-points/types";
 
 type DashboardStats = {
   vehiclesOnIntervention: number;
@@ -68,7 +69,7 @@ export default function Home() {
       const fireStationKindId = fireStationKind?.interest_point_kind_id;
 
       // Fetch fire stations by kind id
-      let fireStations: any[] = [];
+      let fireStations: InterestPoint[] = [];
       if (fireStationKindId) {
         const fireStationsRes = await fetch(
           `/api/interest-points/by-kind/${fireStationKindId}`,
