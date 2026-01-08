@@ -78,12 +78,19 @@ function getStatusBadge(label: string | undefined) {
   );
 }
 
-export function VehicleDetail({ vehicle, onClose, vehicleStatuses, onVehicleUpdate }: VehicleDetailProps) {
+export function VehicleDetail({
+  vehicle,
+  onClose,
+  vehicleStatuses,
+  onVehicleUpdate,
+}: VehicleDetailProps) {
   const [positionAddress, setPositionAddress] =
     useState<ReverseGeocodeResult | null>(null);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
-  const [selectedStatusId, setSelectedStatusId] = useState(vehicle.status?.vehicle_status_id || "");
+  const [selectedStatusId, setSelectedStatusId] = useState(
+    vehicle.status?.vehicle_status_id || "",
+  );
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   // Fetch address when position changes
@@ -154,7 +161,9 @@ export function VehicleDetail({ vehicle, onClose, vehicleStatuses, onVehicleUpda
                   className="h-8 w-8"
                   onClick={() => {
                     setIsEditingStatus(true);
-                    setSelectedStatusId(vehicle.status?.vehicle_status_id || "");
+                    setSelectedStatusId(
+                      vehicle.status?.vehicle_status_id || "",
+                    );
                   }}
                 >
                   <Pencil className="w-4 h-4" />
@@ -170,7 +179,10 @@ export function VehicleDetail({ vehicle, onClose, vehicleStatuses, onVehicleUpda
                 >
                   <option value="">Sélectionner un statut</option>
                   {vehicleStatuses.map((status) => (
-                    <option key={status.vehicle_status_id} value={status.vehicle_status_id}>
+                    <option
+                      key={status.vehicle_status_id}
+                      value={status.vehicle_status_id}
+                    >
                       {status.label}
                     </option>
                   ))}
@@ -188,7 +200,7 @@ export function VehicleDetail({ vehicle, onClose, vehicleStatuses, onVehicleUpda
                     try {
                       const updatedVehicle = await updateVehicleStatus(
                         vehicle.immatriculation,
-                        selectedStatusId
+                        selectedStatusId,
                       );
                       toast.success("Statut mis à jour avec succès");
                       setIsEditingStatus(false);
@@ -199,7 +211,7 @@ export function VehicleDetail({ vehicle, onClose, vehicleStatuses, onVehicleUpda
                       toast.error(
                         error instanceof Error
                           ? error.message
-                          : "Erreur lors de la mise à jour du statut"
+                          : "Erreur lors de la mise à jour du statut",
                       );
                     } finally {
                       setIsUpdatingStatus(false);
@@ -219,7 +231,9 @@ export function VehicleDetail({ vehicle, onClose, vehicleStatuses, onVehicleUpda
                   className="h-8 w-8"
                   onClick={() => {
                     setIsEditingStatus(false);
-                    setSelectedStatusId(vehicle.status?.vehicle_status_id || "");
+                    setSelectedStatusId(
+                      vehicle.status?.vehicle_status_id || "",
+                    );
                   }}
                   disabled={isUpdatingStatus}
                 >

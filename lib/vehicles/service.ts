@@ -115,14 +115,17 @@ export async function updateVehicleStatus(
   vehicleImmatriculation: string,
   statusId: string,
 ): Promise<Vehicle> {
-  const response = await fetchWithAuth(`/api/vehicles/${vehicleImmatriculation}/status`, {
-    method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetchWithAuth(
+    `/api/vehicles/${vehicleImmatriculation}/status`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status_id: statusId }),
     },
-    body: JSON.stringify({ status_id: statusId }),
-  });
+  );
 
   const parsedBody = await parseResponseBody(response);
 
