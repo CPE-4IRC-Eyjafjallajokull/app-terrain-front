@@ -52,7 +52,14 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                onClick={() => {
+                  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === "1") {
+                    window.location.href = "/auth/signin";
+                    return;
+                  }
+
+                  signOut({ callbackUrl: "/auth/signin" });
+                }}
                 className="text-sm"
                 aria-label="Sign out"
               >

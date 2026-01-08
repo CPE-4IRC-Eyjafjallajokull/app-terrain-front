@@ -18,10 +18,16 @@ async function proxyRequest(
   errorContext: string,
 ) {
   const session = await auth();
-  const accessToken = session?.accessToken;
+  let accessToken = session?.accessToken;
 
-  if (!accessToken) {
+  // Allow requests without auth token in development when auth is disabled
+  if (!accessToken && process.env.NEXT_PUBLIC_DISABLE_AUTH !== "1") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Use a dummy token for local development
+  if (!accessToken && process.env.NEXT_PUBLIC_DISABLE_AUTH === "1") {
+    accessToken = "dev-token";
   }
 
   const requestUrl = new URL(request.url);

@@ -221,6 +221,12 @@ export default function VehiclesPage() {
                   <VehicleDetail
                     vehicle={selectedVehicle}
                     onClose={() => selectVehicle(null)}
+                    vehicleStatuses={vehicleStatuses}
+                    onVehicleUpdate={(updatedVehicle) => {
+                      // Update the vehicle in the list
+                      selectVehicle(updatedVehicle);
+                      refetch();
+                    }}
                   />
                 </div>
               ) : (

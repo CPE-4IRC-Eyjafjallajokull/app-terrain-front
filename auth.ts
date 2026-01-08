@@ -4,6 +4,11 @@ import { serverEnv } from "@/lib/env.server";
 import type { JWT } from "next-auth/jwt";
 
 async function refreshAccessToken(token: JWT): Promise<JWT | null> {
+  // Skip refresh for dev tokens in local testing
+  if (token.accessToken === "dev-token") {
+    return token;
+  }
+
   try {
     if (!token.refreshToken) {
       return null;

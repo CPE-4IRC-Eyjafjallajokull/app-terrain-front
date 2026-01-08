@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,8 +17,14 @@ import { Suspense } from "react";
 function SignInContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const router = useRouter();
 
   const handleSignIn = async () => {
+    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === "1") {
+      router.push("/");
+      return;
+    }
+
     await signIn("keycloak", {
       redirect: true,
       callbackUrl: "/",
