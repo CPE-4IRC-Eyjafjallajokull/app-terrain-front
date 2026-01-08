@@ -88,8 +88,7 @@ export default function Home() {
 
       const vehiclesAvailable = vehicles.filter(
         (v: { status?: { code?: string } }) =>
-          v.status?.code === "DISPONIBLE" ||
-          v.status?.code === "AVAILABLE",
+          v.status?.code === "DISPONIBLE" || v.status?.code === "AVAILABLE",
       ).length;
 
       const activeIncidents = incidents.filter(
@@ -275,7 +274,9 @@ export default function Home() {
                       {stats?.activeIncidents ?? 0}
                     </span>
                   )}
-                  <span className="text-sm text-muted-foreground">en cours</span>
+                  <span className="text-sm text-muted-foreground">
+                    en cours
+                  </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Suivez les incidents en cours, déclarez les victimes et gérez
@@ -353,8 +354,12 @@ export default function Home() {
                       <span className="text-4xl font-bold text-green-600">
                         {stats?.vehiclesAvailable ?? 0}
                       </span>
-                      <span className="text-sm text-muted-foreground">disponibles</span>
-                      <span className="text-lg text-muted-foreground">/ {stats?.totalVehicles ?? 0}</span>
+                      <span className="text-sm text-muted-foreground">
+                        disponibles
+                      </span>
+                      <span className="text-lg text-muted-foreground">
+                        / {stats?.totalVehicles ?? 0}
+                      </span>
                     </>
                   )}
                 </div>

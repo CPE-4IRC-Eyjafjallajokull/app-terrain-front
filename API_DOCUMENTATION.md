@@ -1,6 +1,7 @@
 # Configuration API - app-terrain-front
 
 ## Base URL
+
 ```
 https://api.sdmis.mathislambert.fr
 ```
@@ -12,6 +13,7 @@ Documentation complète : https://api.sdmis.mathislambert.fr/docs
 ### QG (Quartier Général)
 
 #### Véhicules
+
 - **GET** `/qg/vehicles` - Liste tous les véhicules avec leur état
   - Proxyfié via: `/api/vehicles`
   - Retourne: `QGVehiclesListRead` avec array de véhicules
@@ -22,12 +24,12 @@ Documentation complète : https://api.sdmis.mathislambert.fr/docs
 - **POST** `/qg/vehicles/{vehicle_immatriculation}/position` - Met à jour la position d'un véhicule
 
 #### Incidents
+
 - **GET** `/qg/incidents` - Liste tous les incidents
   - Proxyfié via: `/api/incidents`
   - Retourne: Array de `QGIncidentSnapshot`
 
 - **POST** `/qg/incidents/new` - Déclare un nouvel incident
-  
 - **GET** `/qg/incidents/{incident_id}` - Détails d'un incident
   - Proxyfié via: `/api/incidents/[incidentId]`
   - Retourne: `QGIncidentRead`
@@ -50,6 +52,7 @@ Documentation complète : https://api.sdmis.mathislambert.fr/docs
 ### Terrain
 
 #### Points d'intérêt
+
 - **GET** `/terrain/interest-points/{kind_id}` - Liste des points d'intérêt par type
   - Proxyfié via: `/api/interest-points/by-kind/[kindId]`
   - Utilisé pour récupérer les centres de secours
@@ -57,6 +60,7 @@ Documentation complète : https://api.sdmis.mathislambert.fr/docs
 ### Référentiels
 
 #### Véhicules
+
 - **GET** `/vehicles/types` - Types de véhicules
   - Proxyfié via: `/api/vehicles/types`
 
@@ -64,6 +68,7 @@ Documentation complète : https://api.sdmis.mathislambert.fr/docs
   - Proxyfié via: `/api/vehicles/statuses`
 
 #### Victimes (Casualties)
+
 - **GET** `/casualties/types` - Types de victimes
   - Proxyfié via: `/api/casualties/types`
 
@@ -77,10 +82,12 @@ Documentation complète : https://api.sdmis.mathislambert.fr/docs
   - Proxyfié via: `/api/casualties/[casualtyId]`
 
 #### Points d'intérêt
+
 - **GET** `/interest-points/kinds` - Types de points d'intérêt
   - Proxyfié via: `/api/interest-points/kinds`
 
 ### Géocodage
+
 - **GET** `/geo/address/reverse` - Géocodage inverse (coordonnées → adresse)
   - Proxyfié via: `/api/geocode/reverse`
   - Paramètres: `lat`, `lon`
@@ -97,6 +104,7 @@ D'après l'analyse de l'API, les codes de statut suivants sont utilisés :
 ## Structure des données principales
 
 ### Vehicle (QGVehicleSummary)
+
 ```typescript
 {
   vehicle_id: string;
@@ -110,6 +118,7 @@ D'après l'analyse de l'API, les codes de statut suivants sont utilisés :
 ```
 
 ### Incident (QGIncidentSnapshot)
+
 ```typescript
 {
   incident_id: string;
@@ -127,6 +136,7 @@ D'après l'analyse de l'API, les codes de statut suivants sont utilisés :
 ```
 
 ### InterestPoint
+
 ```typescript
 {
   interest_point_id: string;
@@ -143,6 +153,7 @@ D'après l'analyse de l'API, les codes de statut suivants sont utilisés :
 ## Authentification
 
 Toutes les requêtes nécessitent un token JWT Bearer obtenu via Keycloak :
+
 ```
 Authorization: Bearer <access_token>
 ```
@@ -152,6 +163,7 @@ Le token est géré automatiquement par NextAuth et injecté dans chaque requêt
 ## Configuration locale
 
 Variables d'environnement nécessaires (`.env.local`) :
+
 ```bash
 # Auth Keycloak
 KEYCLOAK_ISSUER=https://sso.example.com/realms/my-realm

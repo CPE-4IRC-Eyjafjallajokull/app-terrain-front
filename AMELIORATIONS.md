@@ -5,6 +5,7 @@
 ### 1. 🎨 Uniformisation graphique
 
 #### Espacements harmonisés
+
 - **Gap entre cartes** : Uniformisation à `gap-6` sur toutes les pages
   - Page d'accueil : cartes statistiques et cartes d'accès rapide
   - Page incidents : cartes stats et grille d'incidents
@@ -12,11 +13,11 @@
   - Page centres de secours : cartes stats
 
 #### Tailles et couleurs cohérentes
+
 - **Cartes statistiques** : Même structure sur toutes les pages
   - Titre en `text-sm font-medium text-muted-foreground`
   - Valeur en `text-3xl font-bold` avec couleur thématique
   - Hauteur et padding identiques
-  
 - **Palette de couleurs** :
   - 🔴 Rouge (`text-red-600`) : Incidents actifs, interventions en cours
   - 🟢 Vert (`text-green-600`) : Véhicules disponibles, incidents terminés
@@ -27,6 +28,7 @@
 ### 2. 📊 Page d'accueil améliorée avec données dynamiques
 
 #### Statistiques en temps réel
+
 Avant : Cartes statiques sans données
 Après : Cartes dynamiques avec compteurs
 
@@ -54,6 +56,7 @@ Après : Cartes dynamiques avec compteurs
 #### Cartes d'accès rapide enrichies
 
 Chaque carte principale affiche maintenant :
+
 - **Incidents** : Nombre d'incidents actifs en grand (4xl font-bold)
 - **Centres de secours** : Nombre de centres
 - **Véhicules** : Ratio disponibles/total (ex: "15 disponibles / 45")
@@ -61,9 +64,11 @@ Chaque carte principale affiche maintenant :
 ### 3. 🔧 Corrections API
 
 #### Routes validées
+
 Toutes les routes utilisent correctement l'API : `https://api.sdmis.mathislambert.fr`
 
 **Endpoints vérifiés :**
+
 - ✅ `/qg/vehicles` - Liste des véhicules
 - ✅ `/qg/incidents` - Liste des incidents
 - ✅ `/terrain/interest-points/{kind_id}` - Points d'intérêt par type
@@ -74,6 +79,7 @@ Toutes les routes utilisent correctement l'API : `https://api.sdmis.mathislamber
 - ✅ `/casualties/statuses` - Statuts de victimes
 
 #### Codes de statut normalisés
+
 - Intervention : `INTERVENTION`, `EN_ROUTE`, `SUR_PLACE`
 - Disponible : `DISPONIBLE`, `AVAILABLE`
 
@@ -95,18 +101,21 @@ Création de deux documents :
 ## 🎯 Résultats
 
 ### Cohérence visuelle
+
 - ✅ Espacement uniforme (gap-6) sur toutes les pages
 - ✅ Tailles de police cohérentes
 - ✅ Palette de couleurs harmonisée
 - ✅ Structure de cartes identique
 
 ### Fonctionnalités
+
 - ✅ Compteurs dynamiques fonctionnels
 - ✅ Données en temps réel
 - ✅ API correctement configurée
 - ✅ Aucune erreur TypeScript
 
 ### Expérience utilisateur
+
 - ✅ Information pertinente immédiatement visible
 - ✅ Navigation claire entre les sections
 - ✅ Design moderne et professionnel
@@ -146,6 +155,7 @@ Documentation : https://api.sdmis.mathislambert.fr/docs
 ## 🔐 Authentification
 
 L'application utilise :
+
 - **Keycloak** pour l'authentification SSO
 - **NextAuth** pour la gestion des sessions
 - **Bearer tokens** automatiquement injectés dans les requêtes API
