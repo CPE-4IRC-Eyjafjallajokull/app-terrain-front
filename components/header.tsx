@@ -52,7 +52,9 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                onClick={() => {
+                  signOut({ callbackUrl: "/auth/signin" });
+                }}
                 className="text-sm"
                 aria-label="Sign out"
               >

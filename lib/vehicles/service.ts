@@ -107,3 +107,32 @@ export async function fetchFireStationsForFilter(
 
   return fetchInterestPointsByKind(kindId, signal);
 }
+
+/**
+ * Updates the status of a vehicle
+ */
+export async function updateVehicleStatus(
+  vehicleImmatriculation: string,
+  statusId: string,
+): Promise<Vehicle> {
+  const response = await fetchWithAuth(
+    `/api/vehicles/${vehicleImmatriculation}/status`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status_id: statusId }),
+    },
+  );
+
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  return parsedBody.json as Vehicle;
+}

@@ -115,7 +115,7 @@ export function VehicleCard({
             {vehicle.energy && vehicle.energy_level !== null && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Fuel className="w-3.5 h-3.5" />
-                <span>{Math.round(vehicle.energy_level)}%</span>
+                <span>{Math.round(vehicle.energy_level * 100)}%</span>
               </div>
             )}
 

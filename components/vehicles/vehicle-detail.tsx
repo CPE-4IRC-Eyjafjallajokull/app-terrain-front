@@ -15,16 +15,23 @@ import {
   CheckCircle,
   Navigation,
   Loader2,
+  Pencil,
+  Save,
+  XCircle,
 } from "lucide-react";
-import type { Vehicle } from "@/lib/vehicles/types";
+import type { Vehicle, VehicleStatus } from "@/lib/vehicles/types";
 import {
   reverseGeocode,
   type ReverseGeocodeResult,
 } from "@/lib/geocoding/service";
+import { updateVehicleStatus } from "@/lib/vehicles/service";
+import { toast } from "sonner";
 
 type VehicleDetailProps = {
   vehicle: Vehicle;
   onClose: () => void;
+  vehicleStatuses: VehicleStatus[];
+  onVehicleUpdate?: (updatedVehicle: Vehicle) => void;
 };
 
 function formatDate(dateString: string): string {
@@ -71,10 +78,20 @@ function getStatusBadge(label: string | undefined) {
   );
 }
 
-export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
+export function VehicleDetail({
+  vehicle,
+  onClose,
+  vehicleStatuses,
+  onVehicleUpdate,
+}: VehicleDetailProps) {
   const [positionAddress, setPositionAddress] =
     useState<ReverseGeocodeResult | null>(null);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+  const [isEditingStatus, setIsEditingStatus] = useState(false);
+  const [selectedStatusId, setSelectedStatusId] = useState(
+    vehicle.status?.vehicle_status_id || "",
+  );
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   // Fetch address when position changes
   useEffect(() => {
@@ -130,11 +147,101 @@ export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
 
       <CardContent className="p-6 space-y-6">
         {/* Status */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
-            Statut actuel
-          </span>
-          {getStatusBadge(vehicle.status?.label)}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              Statut actuel
+            </span>
+            {!isEditingStatus ? (
+              <div className="flex items-center gap-2">
+                {getStatusBadge(vehicle.status?.label)}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    setIsEditingStatus(true);
+                    setSelectedStatusId(
+                      vehicle.status?.vehicle_status_id || "",
+                    );
+                  }}
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <select
+                  value={selectedStatusId}
+                  onChange={(e) => setSelectedStatusId(e.target.value)}
+                  className="h-9 px-3 rounded-md border border-primary/20 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  disabled={isUpdatingStatus}
+                >
+                  <option value="">Sélectionner un statut</option>
+                  {vehicleStatuses.map((status) => (
+                    <option
+                      key={status.vehicle_status_id}
+                      value={status.vehicle_status_id}
+                    >
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  variant="default"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={async () => {
+                    if (!selectedStatusId) {
+                      toast.error("Veuillez sélectionner un statut");
+                      return;
+                    }
+                    setIsUpdatingStatus(true);
+                    try {
+                      const updatedVehicle = await updateVehicleStatus(
+                        vehicle.immatriculation,
+                        selectedStatusId,
+                      );
+                      toast.success("Statut mis à jour avec succès");
+                      setIsEditingStatus(false);
+                      if (onVehicleUpdate) {
+                        onVehicleUpdate(updatedVehicle);
+                      }
+                    } catch (error) {
+                      toast.error(
+                        error instanceof Error
+                          ? error.message
+                          : "Erreur lors de la mise à jour du statut",
+                      );
+                    } finally {
+                      setIsUpdatingStatus(false);
+                    }
+                  }}
+                  disabled={isUpdatingStatus}
+                >
+                  {isUpdatingStatus ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    setIsEditingStatus(false);
+                    setSelectedStatusId(
+                      vehicle.status?.vehicle_status_id || "",
+                    );
+                  }}
+                  disabled={isUpdatingStatus}
+                >
+                  <XCircle className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Active assignment alert */}
@@ -261,17 +368,17 @@ export function VehicleDetail({ vehicle, onClose }: VehicleDetailProps) {
                     <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${
-                          vehicle.energy_level > 50
+                          vehicle.energy_level * 100 > 50
                             ? "bg-green-500"
-                            : vehicle.energy_level > 20
+                            : vehicle.energy_level * 100 > 20
                               ? "bg-yellow-500"
                               : "bg-red-500"
                         }`}
-                        style={{ width: `${vehicle.energy_level}%` }}
+                        style={{ width: `${vehicle.energy_level * 100}%` }}
                       />
                     </div>
                     <span className="text-sm font-medium">
-                      {Math.round(vehicle.energy_level)}%
+                      {Math.round(vehicle.energy_level * 100)}%
                     </span>
                   </div>
                 )}

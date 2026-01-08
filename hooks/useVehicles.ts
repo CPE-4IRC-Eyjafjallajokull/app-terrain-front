@@ -76,6 +76,7 @@ export function useVehicles(): UseVehiclesResult {
       setStations(stationsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch vehicles");
+      console.error("❌ Erreur lors du chargement des données:", err);
     } finally {
       setIsLoading(false);
     }
