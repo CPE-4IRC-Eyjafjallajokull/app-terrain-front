@@ -1,7 +1,7 @@
 import { proxyApiRequest } from "@/lib/api-proxy";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export const GET = (request: NextRequest) =>
-  proxyApiRequest(request, "interest-points");
+  proxyApiRequest(request, "terrain/interest-points", "interest-points");
