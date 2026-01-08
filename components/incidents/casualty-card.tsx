@@ -3,12 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Edit2, Trash2, Clock, FileText } from "lucide-react";
-import type {
-  CasualtyDetail,
-  CasualtyType,
-  CasualtyStatus,
-} from "@/lib/incidents/types";
+import { Edit2, Trash2, Clock, FileText } from "lucide-react";
+import type { CasualtyDetail } from "@/lib/incidents/types";
 
 type CasualtyCardProps = {
   casualty: CasualtyDetail;

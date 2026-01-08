@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Truck, Clock, User } from "lucide-react";
+import { Truck, Clock } from "lucide-react";
 import type { VehicleAssignmentDetail } from "@/lib/incidents/types";
 
 type VehicleEngagementListProps = {

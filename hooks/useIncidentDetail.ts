@@ -9,7 +9,6 @@ import type {
   CasualtyStatus,
   CasualtyCreate,
   CasualtyUpdate,
-  CasualtyDetail,
 } from "@/lib/incidents/types";
 import {
   fetchIncidentSituation,

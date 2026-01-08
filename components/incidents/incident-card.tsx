@@ -2,15 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  MapPin,
-  Clock,
-  Truck,
-  Users,
-  AlertTriangle,
-  CheckCircle,
-  Circle,
-} from "lucide-react";
+import { MapPin, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import type { IncidentRead } from "@/lib/incidents/types";
 
 type IncidentCardProps = {
