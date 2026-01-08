@@ -1,0 +1,163 @@
+name: OWASP ZAP DAST
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    branches: [main]
+
+  schedule:
+    - cron: "0 3 * * 2"
+
+  workflow_dispatch:
+
+jobs:
+  zap-scan:
+    name: Scan DAST OWASP ZAP
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      issues: write
+      security-events: write
+
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Détection de docker-compose.yml
+        id: check-compose
+        run: |
+          if [ -f "docker-compose.yml" ]; then
+            echo "compose_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ docker-compose.yml détecté - build avec Docker"
+          else
+            echo "compose_exists=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ Pas de docker-compose.yml - build avec npm"
+          fi
+
+      - name: Démarrage avec Docker Compose
+        if: steps.check-compose.outputs.compose_exists == 'true'
+        run: |
+          cat > .env << EOF
+          NODE_ENV=production
+          NEXT_PUBLIC_APP_VERSION=ci-scan
+          API_URL=http://localhost:3001
+          KEYCLOAK_ISSUER=http://localhost:8080/realms/dummy
+          KEYCLOAK_CLIENT_ID=dummy
+          KEYCLOAK_CLIENT_SECRET=dummy
+          NEXTAUTH_SECRET=dummy-secret-for-ci-scan-only
+          NEXTAUTH_URL=http://localhost:3000
+          AUTH_TRUST_HOST=true
+          EOF
+
+          docker compose up -d --build
+
+          echo "⏳ Attente du démarrage de l'application..."
+          sleep 15
+
+      - name: Installation de Node.js
+        if: steps.check-compose.outputs.compose_exists == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Installation des dépendances npm
+        if: steps.check-compose.outputs.compose_exists == 'false'
+        run: npm ci
+
+      - name: Build de l'application Next.js
+        if: steps.check-compose.outputs.compose_exists == 'false'
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_APP_VERSION: ci-scan
+
+      - name: Démarrage de l'application Next.js
+        if: steps.check-compose.outputs.compose_exists == 'false'
+        run: |
+          npm run start &
+          echo $! > .nextjs.pid
+          echo "⏳ Attente du démarrage de l'application..."
+          sleep 15
+        env:
+          PORT: 3000
+          NODE_ENV: production
+
+      - name: Vérification de la disponibilité (http://localhost:3000)
+        run: |
+          echo "🔍 Test de connexion à l'application..."
+          timeout 90 bash -c '
+            until curl -f -s -o /dev/null http://localhost:3000; do
+              echo "En attente de http://localhost:3000..."
+              sleep 3
+            done
+          '
+          echo "✅ Application Next.js disponible sur http://localhost:3000"
+
+      - name: OWASP ZAP - Baseline Scan
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: "http://localhost:3000"
+          rules_file_name: ".zap/rules.tsv"
+          cmd_options: "-a -j -l WARN"
+          issue_title: "ZAP Baseline Scan - Résultats de sécurité"
+          fail_action: false
+          artifact_name: "zap-baseline"
+
+      - name: OWASP ZAP - Full Scan
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: zaproxy/action-full-scan@v0.10.0
+        with:
+          target: "http://localhost:3000"
+          rules_file_name: ".zap/rules.tsv"
+          cmd_options: "-a -j -l WARN"
+          issue_title: "ZAP Full Scan - Résultats de sécurité"
+          fail_action: false
+          artifact_name: "zap-full"
+
+      - name: Fail on ZAP High/Critical alerts
+        if: always()
+        run: |
+          set -eo pipefail
+          if [ ! -f report_json.json ]; then
+            echo "⚠️ report_json.json not found — skipping fail-on-high check"
+            exit 0
+          fi
+          command -v jq >/dev/null 2>&1 || { echo "Installing jq..."; sudo apt-get update && sudo apt-get install -y jq; }
+          high_count=$(jq '[.site[]?.alerts[]? | select((.risk // "") | ascii_upcase == "HIGH")] | length' report_json.json)
+          if [ "$high_count" -gt 0 ]; then
+            echo "❌ ZAP found $high_count High alert(s). Listing details:"
+            jq -r '.site[]?.alerts[]? | select((.risk // "") | ascii_upcase == "HIGH") | "- \(.name) | risk:\(.risk) | confidence:\(.confidence) | url:\(.url) | param:\(.param) | evidence:\(.evidence // \"N/A\")"' report_json.json || true
+            exit 1
+          else
+            echo "✅ No High/Critical ZAP alerts."
+          fi
+
+      - name: Sauvegarde des rapports ZAP
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-scan-reports
+          path: |
+            report_html.html
+            report_json.json
+            report_md.md
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Arrêt de l'application (Docker Compose)
+        if: always() && steps.check-compose.outputs.compose_exists == 'true'
+        run: docker compose down
+
+      - name: Arrêt de l'application (npm)
+        if: always() && steps.check-compose.outputs.compose_exists == 'false'
+        run: |
+          if [ -f .nextjs.pid ]; then
+            kill $(cat .nextjs.pid) || true
+            rm .nextjs.pid
+          fi
