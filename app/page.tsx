@@ -28,6 +28,7 @@ import type { InterestPoint } from "@/lib/interest-points/types";
 
 type DashboardStats = {
   vehiclesOnIntervention: number;
+  vehiclesAvailable: number;
   totalVehicles: number;
   activeIncidents: number;
   totalIncidents: number;
@@ -85,12 +86,19 @@ export default function Home() {
           v.status?.code === "SUR_PLACE",
       ).length;
 
+      const vehiclesAvailable = vehicles.filter(
+        (v: { status?: { code?: string } }) =>
+          v.status?.code === "DISPONIBLE" ||
+          v.status?.code === "AVAILABLE",
+      ).length;
+
       const activeIncidents = incidents.filter(
         (i: { ended_at?: string | null }) => !i.ended_at,
       ).length;
 
       setStats({
         vehiclesOnIntervention,
+        vehiclesAvailable,
         totalVehicles: vehicles.length,
         activeIncidents,
         totalIncidents: incidents.length,
@@ -206,7 +214,7 @@ export default function Home() {
           )}
 
           {/* Stats Widgets Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               title="Véhicules en intervention"
               value={stats?.vehiclesOnIntervention ?? "-"}
@@ -214,15 +222,24 @@ export default function Home() {
               icon={Siren}
               href="/vehicles"
               color="text-red-600"
-              badge="En temps réel"
+              badge="En cours"
             />
             <StatCard
-              title="Incidents en cours"
+              title="Incidents actifs"
               value={stats?.activeIncidents ?? "-"}
-              subtitle={`${stats?.totalIncidents ?? "..."} incidents au total`}
+              subtitle={`Total: ${stats?.totalIncidents ?? "..."} incidents`}
               icon={AlertTriangle}
               href="/incidents"
               color="text-orange-600"
+              badge="En temps réel"
+            />
+            <StatCard
+              title="Véhicules disponibles"
+              value={stats?.vehiclesAvailable ?? "-"}
+              subtitle={`Prêts à intervenir`}
+              icon={Truck}
+              href="/vehicles"
+              color="text-green-600"
             />
             <StatCard
               title="Centres de secours"
@@ -231,14 +248,6 @@ export default function Home() {
               icon={Building2}
               href="/fire-stations"
               color="text-blue-600"
-            />
-            <StatCard
-              title="Flotte totale"
-              value={stats?.totalVehicles ?? "-"}
-              subtitle="Véhicules enregistrés"
-              icon={Truck}
-              href="/vehicles"
-              color="text-green-600"
             />
           </div>
 
@@ -258,6 +267,16 @@ export default function Home() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-baseline gap-3">
+                  {isLoading ? (
+                    <Skeleton className="h-10 w-20" />
+                  ) : (
+                    <span className="text-4xl font-bold text-orange-600">
+                      {stats?.activeIncidents ?? 0}
+                    </span>
+                  )}
+                  <span className="text-sm text-muted-foreground">en cours</span>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Suivez les incidents en cours, déclarez les victimes et gérez
                   les engagements véhicules.
@@ -289,6 +308,16 @@ export default function Home() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-baseline gap-3">
+                  {isLoading ? (
+                    <Skeleton className="h-10 w-20" />
+                  ) : (
+                    <span className="text-4xl font-bold text-blue-600">
+                      {stats?.fireStationsCount ?? 0}
+                    </span>
+                  )}
+                  <span className="text-sm text-muted-foreground">centres</span>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Consultez la liste des centres de secours et leurs
                   localisations sur le territoire.
@@ -316,6 +345,19 @@ export default function Home() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-baseline gap-3">
+                  {isLoading ? (
+                    <Skeleton className="h-10 w-20" />
+                  ) : (
+                    <>
+                      <span className="text-4xl font-bold text-green-600">
+                        {stats?.vehiclesAvailable ?? 0}
+                      </span>
+                      <span className="text-sm text-muted-foreground">disponibles</span>
+                      <span className="text-lg text-muted-foreground">/ {stats?.totalVehicles ?? 0}</span>
+                    </>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Suivez l&apos;état et la position des véhicules, filtrez par
                   type ou statut.
