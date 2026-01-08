@@ -47,18 +47,34 @@ export default function Home() {
     setError(null);
 
     try {
-      // Fetch all data in parallel
-      const [vehiclesRes, incidentsRes, fireStationsRes] = await Promise.all([
+      // Fetch vehicles and incidents in parallel
+      const [vehiclesRes, incidentsRes, kindsRes] = await Promise.all([
         fetch("/api/vehicles"),
         fetch("/api/incidents"),
-        fetch("/api/interest-points/by-kind/fire_station"),
+        fetch("/api/interest-points/kinds"),
       ]);
 
       const vehicles = vehiclesRes.ok ? await vehiclesRes.json() : [];
       const incidents = incidentsRes.ok ? await incidentsRes.json() : [];
-      const fireStations = fireStationsRes.ok
-        ? await fireStationsRes.json()
-        : [];
+      const kinds = kindsRes.ok ? await kindsRes.json() : [];
+
+      // Find fire station kind id
+      const fireStationKind = Array.isArray(kinds)
+        ? kinds.find(
+            (k: { label?: string }) =>
+              k.label?.toLowerCase() === "centre de secours",
+          )
+        : null;
+      const fireStationKindId = fireStationKind?.interest_point_kind_id;
+
+      // Fetch fire stations by kind id
+      let fireStations: any[] = [];
+      if (fireStationKindId) {
+        const fireStationsRes = await fetch(
+          `/api/interest-points/by-kind/${fireStationKindId}`,
+        );
+        fireStations = fireStationsRes.ok ? await fireStationsRes.json() : [];
+      }
 
       // Calculate stats
       const vehiclesOnIntervention = vehicles.filter(
@@ -72,8 +88,6 @@ export default function Home() {
         (i: { ended_at?: string | null }) => !i.ended_at,
       ).length;
 
-      // For casualties, we'd need to fetch each incident's casualties
-      // For now, we'll show active incidents count as proxy
       setStats({
         vehiclesOnIntervention,
         totalVehicles: vehicles.length,
