@@ -7,6 +7,7 @@ import { Menu, LogOut, User, Flame } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Accueil" },
+  { href: "/incidents", label: "Incidents" },
   { href: "/fire-stations", label: "Centres de secours" },
   { href: "/vehicles", label: "Véhicules" },
 ];
