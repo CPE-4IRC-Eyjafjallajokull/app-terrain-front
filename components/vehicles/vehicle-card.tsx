@@ -141,6 +141,7 @@ export function VehicleCard({
                 width={52}
                 height={52}
                 className="object-contain"
+                unoptimized
               />
             </div>
           </div>
