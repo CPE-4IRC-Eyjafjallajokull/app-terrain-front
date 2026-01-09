@@ -9,7 +9,13 @@ export function getVehicleImagePath(
   if (!vehicleTypeCode) {
     return "/vehicles/vehicle_VTU.png"; // Image par défaut
   }
-  return `/vehicles/vehicle_${vehicleTypeCode}.png`;
+
+  // Normaliser le code pour gérer les cas spéciaux (espaces, tirets, etc.)
+  const normalizedCode = vehicleTypeCode
+    .replace(/\s+/g, "_") // Remplacer les espaces par des underscores
+    .replace(/-/g, "_"); // Remplacer les tirets par des underscores
+
+  return `/vehicles/vehicle_${normalizedCode}.png`;
 }
 
 /**
