@@ -90,7 +90,7 @@ export function useVehicles(): UseVehiclesResult {
   useEffect(() => {
     if (selectedVehicle) {
       const updatedVehicle = vehicles.find(
-        (v) => v.vehicle_id === selectedVehicle.vehicle_id
+        (v) => v.vehicle_id === selectedVehicle.vehicle_id,
       );
       if (updatedVehicle) {
         setSelectedVehicle(updatedVehicle);
