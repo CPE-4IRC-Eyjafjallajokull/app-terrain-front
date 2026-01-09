@@ -38,9 +38,9 @@ export default function VehiclesPage() {
 
   // Auto-select vehicle from URL parameter
   useEffect(() => {
-    const selectedImmat = searchParams.get('selected');
+    const selectedImmat = searchParams.get("selected");
     if (selectedImmat && vehicles.length > 0 && !selectedVehicle) {
-      const vehicle = vehicles.find(v => v.immatriculation === selectedImmat);
+      const vehicle = vehicles.find((v) => v.immatriculation === selectedImmat);
       if (vehicle) {
         selectVehicle(vehicle);
       }

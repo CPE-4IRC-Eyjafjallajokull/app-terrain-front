@@ -65,7 +65,9 @@ export function VehicleEngagementList({
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded-lg overflow-hidden bg-primary/5 flex items-center justify-center">
                   <Image
-                    src={getVehicleImagePath(assignment.vehicle.vehicle_type.code)}
+                    src={getVehicleImagePath(
+                      assignment.vehicle.vehicle_type.code,
+                    )}
                     alt={assignment.vehicle.vehicle_type.code}
                     width={40}
                     height={40}

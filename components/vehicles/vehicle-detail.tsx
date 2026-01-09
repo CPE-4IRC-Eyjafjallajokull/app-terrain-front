@@ -311,8 +311,8 @@ export function VehicleDetail({
         </div>
 
         {/* Active assignment alert */}
-        {vehicle.active_assignment && (
-          vehicle.active_assignment.incident_id ? (
+        {vehicle.active_assignment &&
+          (vehicle.active_assignment.incident_id ? (
             <Link
               href={`/incidents/${vehicle.active_assignment.incident_id}`}
               className="block"
@@ -342,8 +342,7 @@ export function VehicleDetail({
                 {formatDate(vehicle.active_assignment.assigned_at)}
               </p>
             </div>
-          )
-        )}
+          ))}
 
         {/* Base station */}
         {vehicle.base_interest_point && (
