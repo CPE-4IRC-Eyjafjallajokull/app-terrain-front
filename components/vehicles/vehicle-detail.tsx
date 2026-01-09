@@ -327,7 +327,7 @@ export function VehicleDetail({
                   {formatDate(vehicle.active_assignment.assigned_at)}
                 </p>
                 <p className="text-xs text-orange-600 mt-1 font-medium">
-                  → Cliquez pour voir l'incident
+                  → Cliquez pour voir l&apos;incident
                 </p>
               </div>
             </Link>
