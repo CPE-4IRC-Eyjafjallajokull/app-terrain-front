@@ -55,8 +55,11 @@ function getStatusBadge(label: string | undefined) {
 
   const labelLower = label.toLowerCase();
   // Exclure "indisponible" du badge vert
-  if ((labelLower.includes("disponible") || labelLower.includes("available")) && 
-      !labelLower.includes("indisponible") && !labelLower.includes("unavailable")) {
+  if (
+    (labelLower.includes("disponible") || labelLower.includes("available")) &&
+    !labelLower.includes("indisponible") &&
+    !labelLower.includes("unavailable")
+  ) {
     return (
       <Badge className="bg-green-100 text-green-700 border border-green-200 text-sm">
         <CheckCircle className="w-4 h-4 mr-1" />

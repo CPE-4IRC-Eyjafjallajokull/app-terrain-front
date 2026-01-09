@@ -24,11 +24,17 @@ function getStatusColor(label: string | undefined): string {
 
   const labelLower = label.toLowerCase();
   // Exclure "indisponible" du statut vert disponible
-  if ((labelLower.includes("disponible") || labelLower.includes("available")) && 
-      !labelLower.includes("indisponible") && !labelLower.includes("unavailable")) {
+  if (
+    (labelLower.includes("disponible") || labelLower.includes("available")) &&
+    !labelLower.includes("indisponible") &&
+    !labelLower.includes("unavailable")
+  ) {
     return "bg-green-100 text-green-700 border-green-200";
   }
-  if (labelLower.includes("indisponible") || labelLower.includes("unavailable")) {
+  if (
+    labelLower.includes("indisponible") ||
+    labelLower.includes("unavailable")
+  ) {
     return "bg-gray-100 text-gray-700 border-gray-200";
   }
   if (labelLower.includes("intervention") || labelLower.includes("busy")) {
@@ -48,8 +54,11 @@ function getStatusIcon(label: string | undefined) {
 
   const labelLower = label.toLowerCase();
   // Exclure "indisponible" de l'icône verte
-  if ((labelLower.includes("disponible") || labelLower.includes("available")) && 
-      !labelLower.includes("indisponible") && !labelLower.includes("unavailable")) {
+  if (
+    (labelLower.includes("disponible") || labelLower.includes("available")) &&
+    !labelLower.includes("indisponible") &&
+    !labelLower.includes("unavailable")
+  ) {
     return <CheckCircle className="w-3 h-3" />;
   }
   if (labelLower.includes("intervention") || labelLower.includes("busy")) {

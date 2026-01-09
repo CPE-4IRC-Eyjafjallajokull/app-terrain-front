@@ -111,9 +111,9 @@ export default function Home() {
           const statusLabel = v.status?.label?.toUpperCase();
           return (
             (statusCode === "DISPONIBLE" ||
-            statusCode === "AVAILABLE" ||
-            statusLabel?.includes("DISPONIBLE") ||
-            statusLabel?.includes("AVAILABLE")) &&
+              statusCode === "AVAILABLE" ||
+              statusLabel?.includes("DISPONIBLE") ||
+              statusLabel?.includes("AVAILABLE")) &&
             // Exclure les véhicules indisponibles
             statusCode !== "INDISPONIBLE" &&
             statusCode !== "UNAVAILABLE" &&

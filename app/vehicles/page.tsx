@@ -36,9 +36,11 @@ export default function VehiclesPage() {
   // Calculate stats - Exclure les véhicules indisponibles
   const availableCount = vehicles.filter((v) => {
     const statusLabel = v.status?.label?.toLowerCase();
-    return statusLabel && 
-           statusLabel.includes("disponible") && 
-           !statusLabel.includes("indisponible");
+    return (
+      statusLabel &&
+      statusLabel.includes("disponible") &&
+      !statusLabel.includes("indisponible")
+    );
   }).length;
   const busyCount = vehicles.filter((v) =>
     v.status?.label?.toLowerCase().includes("intervention"),

@@ -142,7 +142,7 @@ export function useVehicles(): UseVehiclesResult {
     if (selectedVehicle) {
       // Find and update the selected vehicle from the new vehicles list
       const updatedVehicle = vehicles.find(
-        (v) => v.vehicle_id === selectedVehicle.vehicle_id
+        (v) => v.vehicle_id === selectedVehicle.vehicle_id,
       );
       if (updatedVehicle) {
         setSelectedVehicle(updatedVehicle);
