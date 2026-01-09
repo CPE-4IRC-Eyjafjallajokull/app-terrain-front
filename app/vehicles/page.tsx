@@ -227,10 +227,9 @@ export default function VehiclesPage() {
                     vehicle={selectedVehicle}
                     onClose={() => selectVehicle(null)}
                     vehicleStatuses={vehicleStatuses}
-                    onVehicleUpdate={(updatedVehicle) => {
-                      // Update the vehicle in the list dynamically without full refetch
-                      selectVehicle(updatedVehicle);
-                      // Trigger a silent refetch in the background
+                    onVehicleUpdate={() => {
+                      // Ne pas utiliser le véhicule incomplet retourné par l'API
+                      // Juste refetch pour obtenir les données complètes
                       refetch();
                     }}
                   />

@@ -149,7 +149,7 @@ export function VehicleCard({
 
             {/* Type label */}
             <p className="text-sm text-muted-foreground mb-3">
-              {vehicle.vehicle_type.label}
+              {vehicle.vehicle_type?.label || "Type inconnu"}
             </p>
 
             {/* Station */}

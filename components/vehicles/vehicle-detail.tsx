@@ -32,7 +32,7 @@ type VehicleDetailProps = {
   vehicle: Vehicle;
   onClose: () => void;
   vehicleStatuses: VehicleStatus[];
-  onVehicleUpdate?: (updatedVehicle: Vehicle) => void;
+  onVehicleUpdate?: () => void;
 };
 
 function formatDate(dateString: string): string {
@@ -197,7 +197,7 @@ export function VehicleDetail({
               )}
             </CardTitle>
             <p className="text-muted-foreground mt-1">
-              {vehicle.vehicle_type.label}
+              {vehicle.vehicle_type?.label || "Type inconnu"}
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -259,15 +259,18 @@ export function VehicleDetail({
                     }
                     setIsUpdatingStatus(true);
                     try {
-                      const updatedVehicle = await updateVehicleStatus(
+                      await updateVehicleStatus(
                         vehicle.immatriculation,
                         selectedStatusId,
                         vehicleStatuses,
                       );
                       toast.success("Statut mis à jour avec succès");
                       setIsEditingStatus(false);
+
+                      // Ne pas utiliser le véhicule retourné car il peut être incomplet
+                      // Trigger un refetch pour obtenir les données complètes
                       if (onVehicleUpdate) {
-                        onVehicleUpdate(updatedVehicle);
+                        onVehicleUpdate();
                       }
                     } catch (error) {
                       toast.error(
