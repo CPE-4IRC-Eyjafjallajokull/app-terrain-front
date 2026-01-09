@@ -125,20 +125,17 @@ export async function updateVehicleStatus(
     throw new Error("Statut non trouvé");
   }
 
-  const response = await fetchWithAuth(
-    `/api/vehicles/${vehicleId}/status`,
-    {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        status_label: selectedStatus.label,
-        timestamp: new Date().toISOString(),
-      }),
+  const response = await fetchWithAuth(`/api/vehicles/${vehicleId}/status`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({
+      status_label: selectedStatus.label,
+      timestamp: new Date().toISOString(),
+    }),
+  });
 
   const parsedBody = await parseResponseBody(response);
 
