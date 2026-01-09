@@ -110,10 +110,15 @@ export default function Home() {
           const statusCode = v.status?.code?.toUpperCase();
           const statusLabel = v.status?.label?.toUpperCase();
           return (
-            statusCode === "DISPONIBLE" ||
+            (statusCode === "DISPONIBLE" ||
             statusCode === "AVAILABLE" ||
             statusLabel?.includes("DISPONIBLE") ||
-            statusLabel?.includes("AVAILABLE")
+            statusLabel?.includes("AVAILABLE")) &&
+            // Exclure les véhicules indisponibles
+            statusCode !== "INDISPONIBLE" &&
+            statusCode !== "UNAVAILABLE" &&
+            !statusLabel?.includes("INDISPONIBLE") &&
+            !statusLabel?.includes("UNAVAILABLE")
           );
         },
       ).length;

@@ -137,6 +137,19 @@ export function useVehicles(): UseVehiclesResult {
     setSelectedVehicle(vehicle);
   }, []);
 
+  // Update selected vehicle when vehicles list changes
+  useEffect(() => {
+    if (selectedVehicle) {
+      // Find and update the selected vehicle from the new vehicles list
+      const updatedVehicle = vehicles.find(
+        (v) => v.vehicle_id === selectedVehicle.vehicle_id
+      );
+      if (updatedVehicle) {
+        setSelectedVehicle(updatedVehicle);
+      }
+    }
+  }, [vehicles, selectedVehicle]);
+
   return {
     vehicles,
     filteredVehicles,

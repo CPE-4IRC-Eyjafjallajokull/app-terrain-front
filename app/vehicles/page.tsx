@@ -33,10 +33,13 @@ export default function VehiclesPage() {
     refetch,
   } = useVehicles();
 
-  // Calculate stats
-  const availableCount = vehicles.filter((v) =>
-    v.status?.label?.toLowerCase().includes("disponible"),
-  ).length;
+  // Calculate stats - Exclure les véhicules indisponibles
+  const availableCount = vehicles.filter((v) => {
+    const statusLabel = v.status?.label?.toLowerCase();
+    return statusLabel && 
+           statusLabel.includes("disponible") && 
+           !statusLabel.includes("indisponible");
+  }).length;
   const busyCount = vehicles.filter((v) =>
     v.status?.label?.toLowerCase().includes("intervention"),
   ).length;
@@ -223,8 +226,9 @@ export default function VehiclesPage() {
                     onClose={() => selectVehicle(null)}
                     vehicleStatuses={vehicleStatuses}
                     onVehicleUpdate={(updatedVehicle) => {
-                      // Update the vehicle in the list
+                      // Update the vehicle in the list dynamically without full refetch
                       selectVehicle(updatedVehicle);
+                      // Trigger a silent refetch in the background
                       refetch();
                     }}
                   />
