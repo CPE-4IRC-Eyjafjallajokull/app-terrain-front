@@ -86,6 +86,18 @@ export function useVehicles(): UseVehiclesResult {
     fetchData();
   }, [fetchData]);
 
+  // Update selected vehicle when vehicles data changes
+  useEffect(() => {
+    if (selectedVehicle) {
+      const updatedVehicle = vehicles.find(
+        (v) => v.vehicle_id === selectedVehicle.vehicle_id
+      );
+      if (updatedVehicle) {
+        setSelectedVehicle(updatedVehicle);
+      }
+    }
+  }, [vehicles, selectedVehicle]);
+
   // Filter vehicles
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((vehicle) => {
