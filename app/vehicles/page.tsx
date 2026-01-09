@@ -34,6 +34,7 @@ function VehiclesPageContent() {
     resetFilters,
     selectVehicle,
     refetch,
+    refetchVehicles,
   } = useVehicles();
 
   // Auto-select vehicle from URL parameter
@@ -242,9 +243,8 @@ function VehiclesPageContent() {
                     onClose={() => selectVehicle(null)}
                     vehicleStatuses={vehicleStatuses}
                     onVehicleUpdate={() => {
-                      // Ne pas utiliser le véhicule incomplet retourné par l'API
-                      // Juste refetch pour obtenir les données complètes
-                      refetch();
+                      // Refetch seulement la liste des véhicules (plus rapide)
+                      refetchVehicles();
                     }}
                   />
                 </div>

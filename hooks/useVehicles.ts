@@ -34,6 +34,7 @@ type UseVehiclesResult = {
   resetFilters: () => void;
   selectVehicle: (vehicle: Vehicle | null) => void;
   refetch: () => Promise<void>;
+  refetchVehicles: () => Promise<void>;
 };
 
 const initialFilters: VehicleFilters = {
@@ -79,6 +80,17 @@ export function useVehicles(): UseVehiclesResult {
       console.error("❌ Erreur lors du chargement des données:", err);
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  // Refetch only vehicles (lighter than full refetch)
+  const refetchVehicles = useCallback(async () => {
+    try {
+      const vehiclesData = await fetchVehicles();
+      setVehicles(vehiclesData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch vehicles");
+      console.error("❌ Erreur lors du rechargement des véhicules:", err);
     }
   }, []);
 
@@ -163,5 +175,6 @@ export function useVehicles(): UseVehiclesResult {
     resetFilters,
     selectVehicle,
     refetch: fetchData,
+    refetchVehicles,
   };
 }
