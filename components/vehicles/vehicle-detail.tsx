@@ -18,6 +18,7 @@ import {
   Pencil,
   Save,
   XCircle,
+  Circle,
 } from "lucide-react";
 import type { Vehicle, VehicleStatus } from "@/lib/vehicles/types";
 import {
@@ -54,7 +55,29 @@ function getStatusBadge(label: string | undefined) {
   }
 
   const labelLower = label.toLowerCase();
-  // Exclure "indisponible" du badge vert
+
+  // Hors service -> Rouge
+  if (
+    labelLower.includes("hors service") ||
+    labelLower.includes("out of service")
+  ) {
+    return (
+      <Badge className="bg-red-100 text-red-700 border border-red-200 text-sm">
+        <AlertTriangle className="w-4 h-4 mr-1" />
+        {label}
+      </Badge>
+    );
+  }
+  // Engagé -> Bleu
+  if (labelLower.includes("engagé") || labelLower.includes("engaged")) {
+    return (
+      <Badge className="bg-blue-100 text-blue-700 border border-blue-200 text-sm">
+        <CheckCircle className="w-4 h-4 mr-1" />
+        {label}
+      </Badge>
+    );
+  }
+  // Disponible -> Vert (exclure indisponible)
   if (
     (labelLower.includes("disponible") || labelLower.includes("available")) &&
     !labelLower.includes("indisponible") &&
@@ -67,10 +90,41 @@ function getStatusBadge(label: string | undefined) {
       </Badge>
     );
   }
-  if (labelLower.includes("intervention") || labelLower.includes("busy")) {
+  // Sur intervention -> Orange
+  if (labelLower.includes("intervention")) {
     return (
-      <Badge className="bg-red-100 text-red-700 border border-red-200 text-sm">
+      <Badge className="bg-orange-100 text-orange-700 border border-orange-200 text-sm">
         <AlertTriangle className="w-4 h-4 mr-1" />
+        {label}
+      </Badge>
+    );
+  }
+  // Retour -> Violet
+  if (labelLower.includes("retour") || labelLower.includes("returning")) {
+    return (
+      <Badge className="bg-violet-100 text-violet-700 border border-violet-200 text-sm">
+        <CheckCircle className="w-4 h-4 mr-1" />
+        {label}
+      </Badge>
+    );
+  }
+  // Transport -> Bleu ciel
+  if (labelLower.includes("transport")) {
+    return (
+      <Badge className="bg-sky-100 text-sky-700 border border-sky-200 text-sm">
+        <CheckCircle className="w-4 h-4 mr-1" />
+        {label}
+      </Badge>
+    );
+  }
+  // Indisponible -> Gris
+  if (
+    labelLower.includes("indisponible") ||
+    labelLower.includes("unavailable")
+  ) {
+    return (
+      <Badge className="bg-gray-100 text-gray-700 border border-gray-200 text-sm">
+        <Circle className="w-4 h-4 mr-1" />
         {label}
       </Badge>
     );
@@ -133,12 +187,14 @@ export function VehicleDetail({
           <div>
             <CardTitle className="text-2xl flex items-center gap-3">
               {vehicle.immatriculation}
-              <Badge
-                variant="outline"
-                className="bg-primary/10 border-primary/30 text-primary"
-              >
-                {vehicle.vehicle_type.code}
-              </Badge>
+              {vehicle.vehicle_type?.code && (
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 border-primary/30 text-primary"
+                >
+                  {vehicle.vehicle_type.code}
+                </Badge>
+              )}
             </CardTitle>
             <p className="text-muted-foreground mt-1">
               {vehicle.vehicle_type.label}

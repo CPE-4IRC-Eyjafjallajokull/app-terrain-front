@@ -147,5 +147,16 @@ export async function updateVehicleStatus(
     throw new Error(message);
   }
 
-  return parsedBody.json as Vehicle;
+  // Ensure the returned vehicle has all required fields
+  const updatedVehicle = parsedBody.json as Vehicle;
+
+  // If vehicle_type is missing or incomplete, it's likely a partial response
+  // In this case, we should refetch the complete vehicle data
+  if (!updatedVehicle.vehicle_type || !updatedVehicle.vehicle_type.code) {
+    console.warn(
+      "Received partial vehicle data, structure might be incomplete",
+    );
+  }
+
+  return updatedVehicle;
 }

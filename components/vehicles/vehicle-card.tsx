@@ -20,10 +20,22 @@ type VehicleCardProps = {
 };
 
 function getStatusColor(label: string | undefined): string {
-  if (!label) return "bg-gray-100 text-gray-700";
+  if (!label) return "bg-gray-100 text-gray-700 border-gray-200";
 
   const labelLower = label.toLowerCase();
-  // Exclure "indisponible" du statut vert disponible
+
+  // Hors service -> Rouge
+  if (
+    labelLower.includes("hors service") ||
+    labelLower.includes("out of service")
+  ) {
+    return "bg-red-100 text-red-700 border-red-200";
+  }
+  // Engagé -> Bleu
+  if (labelLower.includes("engagé") || labelLower.includes("engaged")) {
+    return "bg-blue-100 text-blue-700 border-blue-200";
+  }
+  // Disponible -> Vert (exclure indisponible)
   if (
     (labelLower.includes("disponible") || labelLower.includes("available")) &&
     !labelLower.includes("indisponible") &&
@@ -31,21 +43,26 @@ function getStatusColor(label: string | undefined): string {
   ) {
     return "bg-green-100 text-green-700 border-green-200";
   }
+  // Sur intervention -> Orange
+  if (labelLower.includes("intervention")) {
+    return "bg-orange-100 text-orange-700 border-orange-200";
+  }
+  // Retour -> Violet
+  if (labelLower.includes("retour") || labelLower.includes("returning")) {
+    return "bg-violet-100 text-violet-700 border-violet-200";
+  }
+  // Transport -> Bleu ciel
+  if (labelLower.includes("transport")) {
+    return "bg-sky-100 text-sky-700 border-sky-200";
+  }
+  // Indisponible -> Gris
   if (
     labelLower.includes("indisponible") ||
     labelLower.includes("unavailable")
   ) {
     return "bg-gray-100 text-gray-700 border-gray-200";
   }
-  if (labelLower.includes("intervention") || labelLower.includes("busy")) {
-    return "bg-red-100 text-red-700 border-red-200";
-  }
-  if (labelLower.includes("maintenance") || labelLower.includes("repair")) {
-    return "bg-yellow-100 text-yellow-700 border-yellow-200";
-  }
-  if (labelLower.includes("retour") || labelLower.includes("transit")) {
-    return "bg-blue-100 text-blue-700 border-blue-200";
-  }
+
   return "bg-gray-100 text-gray-700 border-gray-200";
 }
 
@@ -53,7 +70,15 @@ function getStatusIcon(label: string | undefined) {
   if (!label) return <Circle className="w-3 h-3" />;
 
   const labelLower = label.toLowerCase();
-  // Exclure "indisponible" de l'icône verte
+
+  // Hors service -> Alerte
+  if (
+    labelLower.includes("hors service") ||
+    labelLower.includes("out of service")
+  ) {
+    return <AlertCircle className="w-3 h-3" />;
+  }
+  // Disponible -> Coche verte (exclure indisponible)
   if (
     (labelLower.includes("disponible") || labelLower.includes("available")) &&
     !labelLower.includes("indisponible") &&
@@ -61,9 +86,28 @@ function getStatusIcon(label: string | undefined) {
   ) {
     return <CheckCircle className="w-3 h-3" />;
   }
-  if (labelLower.includes("intervention") || labelLower.includes("busy")) {
+  // Sur intervention -> Alerte
+  if (labelLower.includes("intervention")) {
     return <AlertCircle className="w-3 h-3" />;
   }
+  // Engagé, Retour, Transport -> Cercle
+  if (
+    labelLower.includes("engagé") ||
+    labelLower.includes("engaged") ||
+    labelLower.includes("retour") ||
+    labelLower.includes("returning") ||
+    labelLower.includes("transport")
+  ) {
+    return <CheckCircle className="w-3 h-3" />;
+  }
+  // Indisponible -> Cercle gris
+  if (
+    labelLower.includes("indisponible") ||
+    labelLower.includes("unavailable")
+  ) {
+    return <Circle className="w-3 h-3" />;
+  }
+
   return <Circle className="w-3 h-3" />;
 }
 
@@ -93,12 +137,14 @@ export function VehicleCard({
               <span className="font-bold text-lg tracking-wide">
                 {vehicle.immatriculation}
               </span>
-              <Badge
-                variant="outline"
-                className="bg-primary/5 border-primary/20 text-primary font-medium"
-              >
-                {vehicle.vehicle_type.code}
-              </Badge>
+              {vehicle.vehicle_type?.code && (
+                <Badge
+                  variant="outline"
+                  className="bg-primary/5 border-primary/20 text-primary font-medium"
+                >
+                  {vehicle.vehicle_type.code}
+                </Badge>
+              )}
             </div>
 
             {/* Type label */}
