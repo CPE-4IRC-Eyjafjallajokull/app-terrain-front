@@ -112,7 +112,7 @@ export async function fetchFireStationsForFilter(
  * Updates the status of a vehicle
  */
 export async function updateVehicleStatus(
-  vehicleImmatriculation: string,
+  vehicleId: string,
   statusId: string,
   vehicleStatuses: VehicleStatus[],
 ): Promise<Vehicle> {
@@ -126,7 +126,7 @@ export async function updateVehicleStatus(
   }
 
   const response = await fetchWithAuth(
-    `/api/vehicles/${vehicleImmatriculation}/status`,
+    `/api/vehicles/${vehicleId}/status`,
     {
       method: "POST",
       credentials: "include",

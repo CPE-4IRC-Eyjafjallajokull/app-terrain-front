@@ -261,7 +261,7 @@ export function VehicleDetail({
                     setIsUpdatingStatus(true);
                     try {
                       await updateVehicleStatus(
-                        vehicle.immatriculation,
+                        vehicle.vehicle_id,
                         selectedStatusId,
                         vehicleStatuses,
                       );
