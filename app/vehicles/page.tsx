@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import {
   RefreshCw,
   Truck,
@@ -18,7 +18,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-export default function VehiclesPage() {
+function VehiclesPageContent() {
   const searchParams = useSearchParams();
   const {
     filteredVehicles,
@@ -264,5 +264,13 @@ export default function VehiclesPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function VehiclesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Chargement...</div>}>
+      <VehiclesPageContent />
+    </Suspense>
   );
 }
