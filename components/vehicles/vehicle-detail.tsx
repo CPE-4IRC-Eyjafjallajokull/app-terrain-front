@@ -263,7 +263,6 @@ export function VehicleDetail({
                       await updateVehicleStatus(
                         vehicle.vehicle_id,
                         selectedStatusId,
-                        vehicleStatuses,
                       );
                       toast.success("Statut mis à jour avec succès");
                       setIsEditingStatus(false);

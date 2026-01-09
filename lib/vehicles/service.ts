@@ -114,26 +114,15 @@ export async function fetchFireStationsForFilter(
 export async function updateVehicleStatus(
   vehicleId: string,
   statusId: string,
-  vehicleStatuses: VehicleStatus[],
 ): Promise<Vehicle> {
-  // Find the status label from the status ID
-  const selectedStatus = vehicleStatuses.find(
-    (s) => s.vehicle_status_id === statusId,
-  );
-
-  if (!selectedStatus) {
-    throw new Error("Statut non trouvé");
-  }
-
-  const response = await fetchWithAuth(`/api/vehicles/${vehicleId}/status`, {
-    method: "POST",
+  const response = await fetchWithAuth(`/api/vehicles/${vehicleId}`, {
+    method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      status_label: selectedStatus.label,
-      timestamp: new Date().toISOString(),
+      status_id: statusId,
     }),
   });
 
