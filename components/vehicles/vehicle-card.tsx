@@ -12,6 +12,8 @@ import {
   Circle,
 } from "lucide-react";
 import type { Vehicle } from "@/lib/vehicles/types";
+import Image from "next/image";
+import { getVehicleImagePath } from "@/lib/vehicles/images";
 
 type VehicleCardProps = {
   vehicle: Vehicle;
@@ -130,6 +132,19 @@ export function VehicleCard({
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
+          {/* Image du véhicule */}
+          <div className="flex-shrink-0">
+            <div className="h-16 w-16 rounded-lg overflow-hidden bg-primary/5 flex items-center justify-center">
+              <Image
+                src={getVehicleImagePath(vehicle.vehicle_type?.code)}
+                alt={vehicle.vehicle_type?.code || "Véhicule"}
+                width={52}
+                height={52}
+                className="object-contain"
+              />
+            </div>
+          </div>
+
           {/* Left: Main info */}
           <div className="flex-1 min-w-0">
             {/* Immatriculation + Type */}
