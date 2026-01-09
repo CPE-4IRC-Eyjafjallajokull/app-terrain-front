@@ -8,6 +8,10 @@ export const PATCH = (
   { params }: { params: Promise<{ vehicleId: string }> },
 ) => {
   return params.then((resolvedParams) =>
-    proxyApiRequest(request, `vehicles/${resolvedParams.vehicleId}`, "vehicles"),
+    proxyApiRequest(
+      request,
+      `vehicles/${resolvedParams.vehicleId}`,
+      "vehicles",
+    ),
   );
 };
