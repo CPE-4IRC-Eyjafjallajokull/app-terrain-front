@@ -45,6 +45,7 @@ export type VehicleConsumableStock = {
 export type VehicleActiveAssignment = {
   vehicle_assignment_id: string;
   incident_phase_id: string | null;
+  incident_id?: string | null; // Ajout pour pouvoir linker vers l'incident
   assigned_at: string;
   assigned_by_operator_id: string | null;
 };

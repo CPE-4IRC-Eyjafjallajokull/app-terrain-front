@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   X,
   MapPin,
@@ -311,16 +312,37 @@ export function VehicleDetail({
 
         {/* Active assignment alert */}
         {vehicle.active_assignment && (
-          <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-            <div className="flex items-center gap-2 text-red-700 font-medium">
-              <AlertTriangle className="w-5 h-5" />
-              En intervention
+          vehicle.active_assignment.incident_id ? (
+            <Link
+              href={`/incidents/${vehicle.active_assignment.incident_id}`}
+              className="block"
+            >
+              <div className="p-4 rounded-lg bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors cursor-pointer">
+                <div className="flex items-center gap-2 text-orange-700 font-medium">
+                  <AlertTriangle className="w-5 h-5" />
+                  En intervention
+                </div>
+                <p className="text-sm text-orange-600 mt-1">
+                  Affecté depuis le{" "}
+                  {formatDate(vehicle.active_assignment.assigned_at)}
+                </p>
+                <p className="text-xs text-orange-600 mt-1 font-medium">
+                  → Cliquez pour voir l'incident
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <div className="p-4 rounded-lg bg-orange-50 border border-orange-200">
+              <div className="flex items-center gap-2 text-orange-700 font-medium">
+                <AlertTriangle className="w-5 h-5" />
+                En intervention
+              </div>
+              <p className="text-sm text-orange-600 mt-1">
+                Affecté depuis le{" "}
+                {formatDate(vehicle.active_assignment.assigned_at)}
+              </p>
             </div>
-            <p className="text-sm text-red-600 mt-1">
-              Affecté depuis le{" "}
-              {formatDate(vehicle.active_assignment.assigned_at)}
-            </p>
-          </div>
+          )
         )}
 
         {/* Base station */}

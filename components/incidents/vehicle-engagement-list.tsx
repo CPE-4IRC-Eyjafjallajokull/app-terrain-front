@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Truck, Clock } from "lucide-react";
 import type { VehicleAssignmentDetail } from "@/lib/incidents/types";
+import Image from "next/image";
+import { getVehicleImagePath } from "@/lib/vehicles/images";
+import Link from "next/link";
 
 type VehicleEngagementListProps = {
   assignments: VehicleAssignmentDetail[];
@@ -53,44 +56,54 @@ export function VehicleEngagementList({
       </CardHeader>
       <CardContent className="space-y-3">
         {assignments.map((assignment) => (
-          <div
+          <Link
             key={assignment.vehicle_assignment_id}
-            className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-primary/5"
+            href={`/vehicles?selected=${assignment.vehicle.immatriculation}`}
+            className="block"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Truck className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">
-                    {assignment.vehicle.immatriculation}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="bg-primary/5 border-primary/20 text-primary text-xs"
-                  >
-                    {assignment.vehicle.vehicle_type.code}
-                  </Badge>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-primary/5 hover:bg-muted hover:border-primary/20 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-lg overflow-hidden bg-primary/5 flex items-center justify-center">
+                  <Image
+                    src={getVehicleImagePath(assignment.vehicle.vehicle_type.code)}
+                    alt={assignment.vehicle.vehicle_type.code}
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                    unoptimized
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {assignment.vehicle.vehicle_type.label}
-                </p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold">
+                      {assignment.vehicle.immatriculation}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="bg-primary/5 border-primary/20 text-primary text-xs"
+                    >
+                      {assignment.vehicle.vehicle_type.code}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {assignment.vehicle.vehicle_type.label}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="text-right text-xs text-muted-foreground">
-              <div className="flex items-center gap-1 justify-end">
-                <Clock className="w-3 h-3" />
-                {formatDate(assignment.assigned_at)}
+              <div className="text-right text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 justify-end">
+                  <Clock className="w-3 h-3" />
+                  {formatDate(assignment.assigned_at)}
+                </div>
+                {assignment.phase_type && (
+                  <Badge variant="outline" className="mt-1 text-xs">
+                    {assignment.phase_type.label || assignment.phase_type.code}
+                  </Badge>
+                )}
               </div>
-              {assignment.phase_type && (
-                <Badge variant="outline" className="mt-1 text-xs">
-                  {assignment.phase_type.label || assignment.phase_type.code}
-                </Badge>
-              )}
             </div>
-          </div>
+          </Link>
         ))}
       </CardContent>
     </Card>

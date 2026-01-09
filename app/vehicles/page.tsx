@@ -8,6 +8,8 @@ import { VehicleDetail } from "@/components/vehicles/vehicle-detail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import {
   RefreshCw,
   Truck,
@@ -17,6 +19,7 @@ import {
 } from "lucide-react";
 
 export default function VehiclesPage() {
+  const searchParams = useSearchParams();
   const {
     filteredVehicles,
     vehicles,
@@ -32,6 +35,17 @@ export default function VehiclesPage() {
     selectVehicle,
     refetch,
   } = useVehicles();
+
+  // Auto-select vehicle from URL parameter
+  useEffect(() => {
+    const selectedImmat = searchParams.get('selected');
+    if (selectedImmat && vehicles.length > 0 && !selectedVehicle) {
+      const vehicle = vehicles.find(v => v.immatriculation === selectedImmat);
+      if (vehicle) {
+        selectVehicle(vehicle);
+      }
+    }
+  }, [searchParams, vehicles, selectedVehicle, selectVehicle]);
 
   // Calculate stats - Exclure les véhicules indisponibles
   const availableCount = vehicles.filter((v) => {
