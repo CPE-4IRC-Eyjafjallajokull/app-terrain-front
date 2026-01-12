@@ -81,31 +81,6 @@ export type VehicleTypeRef = {
   label: string | null;
 };
 
-export type VehicleSummary = {
-  vehicle_id: string;
-  immatriculation: string;
-  vehicle_type: VehicleTypeRef;
-};
-
-export type VehicleAssignmentDetail = {
-  vehicle_assignment_id: string;
-  vehicle_id: string;
-  incident_phase_id: string;
-  assigned_at: string;
-  assigned_by_operator_id: string | null;
-  validated_at: string | null;
-  validated_by_operator_id: string | null;
-  unassigned_at: string | null;
-  notes: string | null;
-  vehicle: VehicleSummary;
-  phase_type: PhaseTypeRef | null;
-};
-
-export type IncidentEngagements = {
-  incident_id: string;
-  vehicle_assignments: VehicleAssignmentDetail[];
-};
-
 // ============ Casualty Types ============
 
 export type CasualtyTypeRef = {
@@ -210,6 +185,112 @@ export type IncidentRead = {
 
 // ============ Filters ============
 
+export type PhaseType = {
+  phase_type_id: string;
+  code: string;
+  label: string | null;
+};
+
+export type IncidentPhase = {
+  incident_phase_id: string;
+  phase_type: PhaseType;
+  priority: number;
+  started_at: string | null;
+  ended_at: string | null;
+  vehicle_assignments: VehicleAssignmentRef[];
+};
+
+export type VehicleAssignmentRef = {
+  vehicle_assignment_id: string;
+  vehicle_id: string;
+  incident_phase_id: string | null;
+  assigned_at: string;
+  assigned_by_operator_id: string | null;
+  validated_at: string | null;
+  validated_by_operator_id: string | null;
+  unassigned_at: string | null;
+};
+
+export type Incident = {
+  incident_id: string;
+  created_by_operator_id: string | null;
+  address: string | null;
+  zipcode: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  description: string | null;
+  ended_at: string | null;
+  created_at: string;
+  updated_at: string;
+  phases: IncidentPhase[];
+};
+
+export type VehicleType = {
+  vehicle_type_id: string;
+  code: string;
+  label: string;
+};
+
+export type VehicleSummary = {
+  vehicle_id: string;
+  immatriculation: string;
+  vehicle_type: {
+    vehicle_type_id: string;
+    code: string;
+    label: string | null;
+  };
+};
+
+export type VehicleAssignmentDetail = {
+  vehicle_assignment_id: string;
+  vehicle_id: string;
+  incident_phase_id: string;
+  assigned_at: string;
+  assigned_by_operator_id: string | null;
+  validated_at: string | null;
+  validated_by_operator_id: string | null;
+  unassigned_at: string | null;
+  notes: string | null;
+  vehicle: VehicleSummary;
+  phase_type: PhaseType | null;
+};
+
+export type IncidentEngagements = {
+  incident_id: string;
+  vehicle_assignments: VehicleAssignmentDetail[];
+};
+
+// Reinforcement types
+export type Reinforcement = {
+  reinforcement_id: string;
+  incident_phase_id: string;
+  validated_at: string | null;
+  rejected_at: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type ReinforcementCreate = {
+  incident_phase_id: string;
+  notes?: string | null;
+};
+
+export type ReinforcementVehicleRequest = {
+  reinforcement_id: string;
+  vehicle_type_id: string;
+  quantity: number;
+  assigned_quantity: number;
+};
+
+export type ReinforcementVehicleRequestCreate = {
+  reinforcement_id: string;
+  vehicle_type_id: string;
+  quantity: number;
+  assigned_quantity?: number;
+};
+
+// Filter type for incidents list
 export type IncidentFilters = {
   search: string;
   showEnded: boolean;
