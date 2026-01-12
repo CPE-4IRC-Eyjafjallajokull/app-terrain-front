@@ -69,6 +69,7 @@ export function TerrainMap({
     null,
   );
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const hasCalculatedRoute = useRef(false);
 
   // Calculate route using internal geo/route API
   const calculateRoute = useCallback(async () => {
@@ -142,9 +143,15 @@ export function TerrainMap({
     }
   }, [vehiclePosition, incidentPosition]);
 
-  // Auto-calculate route when positions change
+  // Auto-calculate route ONCE when positions are available and map is loaded
   useEffect(() => {
-    if (vehiclePosition && incidentPosition && isMapLoaded) {
+    if (
+      vehiclePosition &&
+      incidentPosition &&
+      isMapLoaded &&
+      !hasCalculatedRoute.current
+    ) {
+      hasCalculatedRoute.current = true;
       calculateRoute();
     }
   }, [vehiclePosition, incidentPosition, isMapLoaded, calculateRoute]);

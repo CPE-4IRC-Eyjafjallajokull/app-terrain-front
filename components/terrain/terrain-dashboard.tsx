@@ -148,10 +148,11 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     const eventData = sseData.data as
       | {
           vehicle_id?: string;
+          vehicle_immatriculation?: string;
           latitude?: number;
           longitude?: number;
-          vehicle_status_id?: string;
           status_label?: string;
+          timestamp?: string;
         }
       | undefined;
 
@@ -168,14 +169,15 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
           latitude: eventData.latitude ?? prev.current_position?.latitude ?? 0,
           longitude:
             eventData.longitude ?? prev.current_position?.longitude ?? 0,
-          timestamp: new Date().toISOString(),
+          timestamp: eventData.timestamp ?? new Date().toISOString(),
         },
       }));
     } else if (event === "vehicle_status_update") {
-      // Update vehicle status in real-time
-      if (eventData.vehicle_status_id) {
+      // Update vehicle status in real-time by matching label
+      if (eventData.status_label) {
         const newStatus = vehicleStatuses.find(
-          (s) => s.vehicle_status_id === eventData.vehicle_status_id,
+          (s) =>
+            s.label.toLowerCase() === eventData.status_label?.toLowerCase(),
         );
         if (newStatus) {
           setCurrentVehicle((prev) => ({
@@ -183,6 +185,16 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             status: newStatus,
           }));
           toast.info(`Statut mis à jour: ${newStatus.label}`);
+        } else {
+          // If no matching status found, create a temporary one with the label
+          setCurrentVehicle((prev) => ({
+            ...prev,
+            status: {
+              vehicle_status_id: "unknown",
+              label: eventData.status_label || "Inconnu",
+            },
+          }));
+          toast.info(`Statut mis à jour: ${eventData.status_label}`);
         }
       }
     }
