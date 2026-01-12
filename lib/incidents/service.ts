@@ -3,6 +3,13 @@ import { getErrorMessage, parseResponseBody } from "@/lib/api-response";
 import type {
   Incident,
   IncidentEngagements,
+  IncidentSituation,
+  IncidentCasualties,
+  CasualtyType,
+  CasualtyStatus,
+  CasualtyCreate,
+  CasualtyUpdate,
+  CasualtyRead,
   Reinforcement,
   ReinforcementCreate,
   ReinforcementVehicleRequest,
@@ -13,9 +20,7 @@ import type {
 /**
  * Fetches all incidents
  */
-export async function fetchIncidents(
-  signal?: AbortSignal,
-): Promise<Incident[]> {
+export async function fetchIncidents(signal?: AbortSignal): Promise<Incident[]> {
   const response = await fetchWithAuth("/api/incidents", {
     method: "GET",
     credentials: "include",
@@ -68,15 +73,12 @@ export async function fetchIncidentEngagements(
   incidentId: string,
   signal?: AbortSignal,
 ): Promise<IncidentEngagements> {
-  const response = await fetchWithAuth(
-    `/api/incidents/${incidentId}/engagements`,
-    {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store",
-      signal,
-    },
-  );
+  const response = await fetchWithAuth(`/api/incidents/${incidentId}/engagements`, {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
 
   const parsedBody = await parseResponseBody(response);
 
@@ -146,17 +148,14 @@ export async function createReinforcement(
 export async function createReinforcementVehicleRequest(
   data: ReinforcementVehicleRequestCreate,
 ): Promise<ReinforcementVehicleRequest> {
-  const response = await fetchWithAuth(
-    "/api/incidents/reinforcement-vehicle-requests",
-    {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+  const response = await fetchWithAuth("/api/incidents/reinforcement-vehicle-requests", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify(data),
+  });
 
   const parsedBody = await parseResponseBody(response);
 
@@ -175,10 +174,10 @@ export async function fetchReinforcements(
   incidentPhaseId?: string,
   signal?: AbortSignal,
 ): Promise<Reinforcement[]> {
-  const url = incidentPhaseId
+  const url = incidentPhaseId 
     ? `/api/incidents/reinforcements?incident_phase_id=${incidentPhaseId}`
     : "/api/incidents/reinforcements";
-
+    
   const response = await fetchWithAuth(url, {
     method: "GET",
     credentials: "include",
@@ -230,4 +229,175 @@ export async function fetchReinforcementVehicleRequests(
   }
 
   return parsedBody.json as ReinforcementVehicleRequest[];
+}
+
+/**
+ * Fetches the situation (overview) for an incident
+ */
+export async function fetchIncidentSituation(
+  incidentId: string,
+  signal?: AbortSignal,
+): Promise<IncidentSituation> {
+  const response = await fetchWithAuth(`/api/incidents/${incidentId}/situation`, {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
+
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  return parsedBody.json as IncidentSituation;
+}
+
+/**
+ * Fetches casualties for an incident
+ */
+export async function fetchIncidentCasualties(
+  incidentId: string,
+  signal?: AbortSignal,
+): Promise<IncidentCasualties> {
+  const response = await fetchWithAuth(`/api/casualties?incident_id=${incidentId}`, {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
+
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  return parsedBody.json as IncidentCasualties;
+}
+
+/**
+ * Fetches all casualty types
+ */
+export async function fetchCasualtyTypes(
+  signal?: AbortSignal,
+): Promise<CasualtyType[]> {
+  const response = await fetchWithAuth("/api/casualties/types", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
+
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  if (!Array.isArray(parsedBody.json)) {
+    return [];
+  }
+
+  return parsedBody.json as CasualtyType[];
+}
+
+/**
+ * Fetches all casualty statuses
+ */
+export async function fetchCasualtyStatuses(
+  signal?: AbortSignal,
+): Promise<CasualtyStatus[]> {
+  const response = await fetchWithAuth("/api/casualties/statuses", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    signal,
+  });
+
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  if (!Array.isArray(parsedBody.json)) {
+    return [];
+  }
+
+  return parsedBody.json as CasualtyStatus[];
+}
+
+/**
+ * Creates a new casualty
+ */
+export async function createCasualty(
+  data: CasualtyCreate,
+): Promise<CasualtyRead> {
+  const response = await fetchWithAuth("/api/casualties", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  return parsedBody.json as CasualtyRead;
+}
+
+/**
+ * Updates an existing casualty
+ */
+export async function updateCasualty(
+  casualtyId: string,
+  data: CasualtyUpdate,
+): Promise<CasualtyRead> {
+  const response = await fetchWithAuth(`/api/casualties/${casualtyId}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
+
+  return parsedBody.json as CasualtyRead;
+}
+
+/**
+ * Deletes a casualty
+ */
+export async function deleteCasualty(
+  casualtyId: string,
+): Promise<void> {
+  const response = await fetchWithAuth(`/api/casualties/${casualtyId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const parsedBody = await parseResponseBody(response);
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
 }
