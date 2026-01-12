@@ -64,7 +64,7 @@ export function VehicleSearch({
 
   // Filter vehicles based on search query
   useEffect(() => {
-    if (searchQuery.length >= 2) {
+    if (searchQuery.length >= 1) {
       const query = searchQuery.toUpperCase();
       const filtered = vehicles.filter((v) =>
         v.immatriculation.toUpperCase().includes(query),
@@ -134,11 +134,11 @@ export function VehicleSearch({
   };
 
   return (
-    <Card className="w-full max-w-md border-primary/20 shadow-xl">
+    <Card className="w-full max-w-md border-orange-200 shadow-xl">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary/10 rounded-lg">
-            <Truck className="w-6 h-6 text-primary" />
+          <div className="p-2.5 bg-orange-100 rounded-lg">
+            <Truck className="w-6 h-6 text-orange-600" />
           </div>
           <div>
             <CardTitle className="text-xl">Recherche véhicule</CardTitle>
@@ -171,37 +171,45 @@ export function VehicleSearch({
           )}
 
           {showResults && filteredVehicles.length > 0 && (
-            <ScrollArea className="max-h-64 rounded-lg border">
-              <div className="p-2 space-y-1">
-                {filteredVehicles.map((vehicle) => (
-                  <button
-                    key={vehicle.vehicle_id}
-                    type="button"
-                    onClick={() => handleSelectVehicle(vehicle)}
-                    className="w-full p-3 rounded-lg hover:bg-accent transition-colors text-left flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 bg-primary/10 rounded">
-                        <Truck className="w-4 h-4 text-primary" />
+            <div className="rounded-lg border bg-background shadow-lg">
+              <ScrollArea className="h-[240px]">
+                <div className="p-2 space-y-1">
+                  {filteredVehicles.slice(0, 50).map((vehicle) => (
+                    <button
+                      key={vehicle.vehicle_id}
+                      type="button"
+                      onClick={() => handleSelectVehicle(vehicle)}
+                      className="w-full p-3 rounded-lg hover:bg-accent transition-colors text-left flex items-center justify-between gap-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-1.5 bg-orange-100 rounded">
+                          <Truck className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="font-mono font-semibold">
+                            {vehicle.immatriculation}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {vehicle.vehicle_type?.label || "Type inconnu"}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-mono font-semibold">
-                          {vehicle.immatriculation}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {vehicle.vehicle_type?.label || "Type inconnu"}
-                        </p>
-                      </div>
-                    </div>
-                    {getStatusBadge(vehicle.status)}
-                  </button>
-                ))}
-              </div>
-            </ScrollArea>
+                      {getStatusBadge(vehicle.status)}
+                    </button>
+                  ))}
+                  {filteredVehicles.length > 50 && (
+                    <p className="text-xs text-center text-muted-foreground py-2">
+                      +{filteredVehicles.length - 50} autres véhicules. Affinez
+                      votre recherche.
+                    </p>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
           )}
 
           {showResults &&
-            searchQuery.length >= 2 &&
+            searchQuery.length >= 1 &&
             filteredVehicles.length === 0 && (
               <div className="p-4 text-center text-muted-foreground border rounded-lg border-dashed">
                 <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -214,11 +222,11 @@ export function VehicleSearch({
 
           <Button
             type="submit"
-            className="w-full h-12 text-base"
+            className="w-full h-12 text-base bg-orange-600 hover:bg-orange-700"
             disabled={
               isLoading ||
               externalLoading ||
-              searchQuery.length < 2 ||
+              searchQuery.length < 1 ||
               filteredVehicles.length === 0
             }
           >

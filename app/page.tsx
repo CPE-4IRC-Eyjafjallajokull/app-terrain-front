@@ -6,9 +6,18 @@ import { VehicleSearch } from "@/components/terrain/vehicle-search";
 import { TerrainDashboard } from "@/components/terrain/terrain-dashboard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Flame, Shield, Radio, MapPin, Truck, LogIn } from "lucide-react";
+import {
+  Flame,
+  Shield,
+  Radio,
+  MapPin,
+  Truck,
+  LogIn,
+  LogOut,
+} from "lucide-react";
 import type { Vehicle } from "@/lib/vehicles/types";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 // Feature card component for the signin side
 function FeatureCard({
@@ -90,11 +99,11 @@ export default function Home() {
   if (session) {
     return (
       <div className="min-h-screen flex">
-        {/* Left Side - Branding */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden">
+        {/* Left Side - Branding - Orange theme for terrain */}
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:24px_24px] opacity-30" />
 
-          <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground w-full">
+          <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
@@ -173,9 +182,20 @@ export default function Home() {
 
             {/* Welcome message */}
             <div className="text-center lg:text-left">
-              <h2 className="text-2xl font-semibold mb-2">
-                Bonjour, {session.user?.name?.split(" ")[0] || "Pompier"} 👋
-              </h2>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl font-semibold">
+                  Bonjour, {session.user?.name?.split(" ")[0] || "Pompier"} 👋
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="gap-2 text-muted-foreground hover:text-destructive hover:border-destructive"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Déconnexion</span>
+                </Button>
+              </div>
               <p className="text-muted-foreground">
                 Recherchez votre véhicule pour accéder à votre intervention
               </p>
@@ -197,11 +217,11 @@ export default function Home() {
   // Not authenticated - Show signin prompt
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden">
+      {/* Left Side - Branding - Orange theme */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:24px_24px] opacity-30" />
 
-        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground w-full">
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">

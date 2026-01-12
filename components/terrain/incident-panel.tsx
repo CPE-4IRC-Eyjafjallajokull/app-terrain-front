@@ -191,8 +191,8 @@ export function IncidentPanel({
 
   return (
     <>
-      <Card className="border-primary/20">
-        <CardHeader className="pb-3 bg-gradient-to-r from-orange-50 to-transparent border-b">
+      <Card className="border-orange-200">
+        <CardHeader className="pb-3 bg-gradient-to-r from-orange-50 to-transparent border-b border-orange-100">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-100 rounded-lg">

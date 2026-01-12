@@ -129,12 +129,12 @@ export function VehicleStatusQuick({
 
   return (
     <>
-      <Card className="border-primary/20">
+      <Card className="border-orange-200">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-primary" />
+                <AlertTriangle className="w-5 h-5 text-orange-600" />
                 Statut rapide
               </CardTitle>
               <CardDescription>
@@ -154,17 +154,20 @@ export function VehicleStatusQuick({
                 <Button
                   key={quickStatus.label}
                   variant="outline"
-                  className={`h-14 flex-col gap-1 ${
+                  className={`h-16 flex-col gap-1 transition-all ${
                     isCurrent
-                      ? `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color} border-2`
-                      : `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color}`
+                      ? `${quickStatus.bgColor} ${quickStatus.color} border-2 ${quickStatus.borderColor} ring-2 ring-offset-2 ring-${quickStatus.borderColor.replace("border-", "")} shadow-lg scale-105`
+                      : `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color} opacity-70 hover:opacity-100`
                   }`}
                   disabled={isDisabled || isCurrent || !hasMatch}
                   onClick={() => handleStatusClick(quickStatus)}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon
+                    className={`w-6 h-6 ${isCurrent ? "animate-pulse" : ""}`}
+                  />
                   <span className="text-xs font-medium">
                     {quickStatus.label}
+                    {isCurrent && " ✓"}
                   </span>
                 </Button>
               );

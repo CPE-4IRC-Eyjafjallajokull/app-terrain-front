@@ -13,6 +13,7 @@ import {
   CheckCircle,
   Flame,
   RefreshCw,
+  LogOut,
 } from "lucide-react";
 import type { Vehicle, VehicleStatus } from "@/lib/vehicles/types";
 import type {
@@ -25,6 +26,7 @@ import { VehicleStatusQuick } from "./vehicle-status-quick";
 import { IncidentPanel } from "./incident-panel";
 import { TerrainMap } from "./terrain-map";
 import { toast } from "sonner";
+import { signOut } from "next-auth/react";
 
 type TerrainDashboardProps = {
   vehicle: Vehicle;
@@ -257,9 +259,9 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-orange-50">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 border-b border-orange-200 bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
@@ -271,8 +273,8 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Truck className="w-5 h-5 text-primary" />
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Truck className="w-5 h-5 text-orange-600" />
               </div>
               <div>
                 <h1 className="font-mono font-bold text-lg">
@@ -285,7 +287,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {getStatusBadge(currentVehicle.status)}
             <Button
               variant="outline"
@@ -296,6 +298,15 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
               <RefreshCw
                 className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
               />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="text-muted-foreground hover:text-destructive hover:border-destructive"
+              title="Déconnexion"
+            >
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -343,10 +354,10 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             {/* Info Panel */}
             <div className="space-y-4">
               {/* Vehicle Info Card */}
-              <Card className="border-primary/20">
+              <Card className="border-orange-200">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-primary" />
+                    <Truck className="w-5 h-5 text-orange-600" />
                     <CardTitle className="text-lg">
                       Informations véhicule
                     </CardTitle>
