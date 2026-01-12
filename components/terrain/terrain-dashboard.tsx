@@ -27,6 +27,7 @@ import { IncidentPanel } from "./incident-panel";
 import { TerrainMap } from "./terrain-map";
 import { toast } from "sonner";
 import { signOut } from "next-auth/react";
+import { useSSE } from "@/hooks/useSSE";
 
 type TerrainDashboardProps = {
   vehicle: Vehicle;
@@ -135,6 +136,54 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   useEffect(() => {
     fetchIncidentData();
   }, [fetchIncidentData]);
+
+  // SSE for live vehicle updates
+  const { data: sseData, isConnected: sseConnected } = useSSE("/api/events");
+
+  // Handle SSE events for vehicle position and status updates
+  useEffect(() => {
+    if (!sseData) return;
+
+    const event = sseData.event;
+    const eventData = sseData.data as {
+      vehicle_id?: string;
+      latitude?: number;
+      longitude?: number;
+      vehicle_status_id?: string;
+      status_label?: string;
+    } | undefined;
+
+    if (!eventData?.vehicle_id) return;
+    
+    // Only process events for the current vehicle
+    if (eventData.vehicle_id !== currentVehicle.vehicle_id) return;
+
+    if (event === "vehicle_position_update") {
+      // Update vehicle position in real-time
+      setCurrentVehicle((prev) => ({
+        ...prev,
+        current_position: {
+          latitude: eventData.latitude ?? prev.current_position?.latitude ?? 0,
+          longitude: eventData.longitude ?? prev.current_position?.longitude ?? 0,
+          timestamp: new Date().toISOString(),
+        },
+      }));
+    } else if (event === "vehicle_status_update") {
+      // Update vehicle status in real-time
+      if (eventData.vehicle_status_id) {
+        const newStatus = vehicleStatuses.find(
+          (s) => s.vehicle_status_id === eventData.vehicle_status_id
+        );
+        if (newStatus) {
+          setCurrentVehicle((prev) => ({
+            ...prev,
+            status: newStatus,
+          }));
+          toast.info(`Statut mis à jour: ${newStatus.label}`);
+        }
+      }
+    }
+  }, [sseData, currentVehicle.vehicle_id, vehicleStatuses]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -288,6 +337,11 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* SSE Connection indicator */}
+            <div
+              className={`w-2 h-2 rounded-full ${sseConnected ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
+              title={sseConnected ? "Connecté au serveur temps réel" : "Déconnecté du serveur temps réel"}
+            />
             {getStatusBadge(currentVehicle.status)}
             <Button
               variant="outline"

@@ -144,7 +144,7 @@ export function VehicleStatusQuick({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             {QUICK_STATUSES.map((quickStatus) => {
               const Icon = quickStatus.icon;
               const isCurrent = isCurrentStatus(quickStatus);
@@ -154,21 +154,26 @@ export function VehicleStatusQuick({
                 <Button
                   key={quickStatus.label}
                   variant="outline"
-                  className={`h-16 flex-col gap-1 transition-all ${
+                  className={`h-20 flex-col gap-2 transition-all relative ${
                     isCurrent
-                      ? `${quickStatus.bgColor} ${quickStatus.color} border-2 ${quickStatus.borderColor} ring-2 ring-offset-2 ring-${quickStatus.borderColor.replace("border-", "")} shadow-lg scale-105`
-                      : `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color} opacity-70 hover:opacity-100`
+                      ? `${quickStatus.color} border-3 ${quickStatus.borderColor} shadow-xl scale-105 bg-gradient-to-br from-white ${quickStatus.bgColor}`
+                      : `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color} hover:scale-105 hover:shadow-lg hover:border-2`
                   }`}
-                  disabled={isDisabled || isCurrent || !hasMatch}
-                  onClick={() => handleStatusClick(quickStatus)}
+                  disabled={isDisabled || !hasMatch}
+                  onClick={() => !isCurrent && handleStatusClick(quickStatus)}
                 >
-                  <Icon
-                    className={`w-6 h-6 ${isCurrent ? "animate-pulse" : ""}`}
-                  />
-                  <span className="text-xs font-medium">
+                  {isCurrent && (
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-current">
+                      <CheckCircle className="w-4 h-4" />
+                    </div>
+                  )}
+                  <Icon className={`w-7 h-7 ${isCurrent ? '' : ''}`} />
+                  <span className="text-sm font-semibold">
                     {quickStatus.label}
-                    {isCurrent && " ✓"}
                   </span>
+                  {isCurrent && (
+                    <span className="text-[10px] font-medium opacity-70">Statut actuel</span>
+                  )}
                 </Button>
               );
             })}
