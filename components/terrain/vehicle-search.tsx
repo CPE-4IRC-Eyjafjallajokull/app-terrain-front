@@ -186,14 +186,17 @@ export function VehicleSearch({
                       <div className="flex items-center gap-3">
                         <div className="p-1.5 bg-orange-100 rounded flex items-center justify-center w-9 h-9">
                           <Image
-                            src={getVehicleImagePath(vehicle.vehicle_type?.code)}
+                            src={getVehicleImagePath(
+                              vehicle.vehicle_type?.code,
+                            )}
                             alt={vehicle.vehicle_type?.code || "Véhicule"}
                             width={24}
                             height={24}
                             className="object-contain"
                             onError={(e) => {
                               // Fallback to default image if not found
-                              (e.target as HTMLImageElement).src = "/vehicles/vehicle_VTU.png";
+                              (e.target as HTMLImageElement).src =
+                                "/vehicles/vehicle_VTU.png";
                             }}
                           />
                         </div>
