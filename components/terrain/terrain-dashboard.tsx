@@ -50,7 +50,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Track the current destination to prevent duplicate route fetches
   const lastFetchedIncidentId = useRef<string | null>(null);
   const isReturningToBase = useRef<boolean>(false);
@@ -169,7 +169,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     if (lastFetchedIncidentId.current === incidentId) {
       return;
     }
-    
+
     lastFetchedIncidentId.current = incidentId;
     isReturningToBase.current = false;
 
@@ -208,30 +208,35 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     if (!sseData) return;
 
     const event = sseData.event;
-    
+
     // Handle vehicle_assignment event
     if (event === "vehicle_assignment") {
-      const assignmentData = sseData.data as {
-        vehicle_id?: string;
-        vehicle_immatriculation?: string;
-        incident_id?: string;
-        incident_phase_id?: string;
-        assigned_at?: string;
-        unassigned_at?: string | null;
-      } | undefined;
-      
+      const assignmentData = sseData.data as
+        | {
+            vehicle_id?: string;
+            vehicle_immatriculation?: string;
+            incident_id?: string;
+            incident_phase_id?: string;
+            assigned_at?: string;
+            unassigned_at?: string | null;
+          }
+        | undefined;
+
       if (!assignmentData?.vehicle_id) return;
-      
+
       // Only process events for the current vehicle
-      if (assignmentData.vehicle_id !== currentVehicle.vehicle_id &&
-          assignmentData.vehicle_immatriculation !== currentVehicle.immatriculation) {
+      if (
+        assignmentData.vehicle_id !== currentVehicle.vehicle_id &&
+        assignmentData.vehicle_immatriculation !==
+          currentVehicle.immatriculation
+      ) {
         return;
       }
-      
+
       // If there's an incident_id and no unassigned_at, fetch the incident
       if (assignmentData.incident_id && !assignmentData.unassigned_at) {
         fetchIncidentById(assignmentData.incident_id);
-        
+
         // Update the vehicle's active assignment
         setCurrentVehicle((prev) => ({
           ...prev,
@@ -249,12 +254,12 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         setEngagements(null);
         setCasualties(null);
         lastFetchedIncidentId.current = null;
-        
+
         setCurrentVehicle((prev) => ({
           ...prev,
           active_assignment: null,
         }));
-        
+
         toast.info("Intervention terminée");
       }
       return;
@@ -262,13 +267,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
     const eventData = sseData.data as
       | {
-        vehicle_id?: string;
-        vehicle_immatriculation?: string;
-        latitude?: number;
-        longitude?: number;
-        status_label?: string;
-        timestamp?: string;
-      }
+          vehicle_id?: string;
+          vehicle_immatriculation?: string;
+          latitude?: number;
+          longitude?: number;
+          status_label?: string;
+          timestamp?: string;
+        }
       | undefined;
 
     if (!eventData?.vehicle_id) return;
@@ -294,7 +299,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         const newStatus = vehicleStatuses.find(
           (s) => s.label.toLowerCase() === statusLabel,
         );
-        
+
         // Check if this is a "retour" status
         const isRetourStatus = statusLabel.includes("retour");
         if (isRetourStatus && !isReturningToBase.current) {
@@ -302,7 +307,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
           // Clear incident but keep base destination for route calculation
           lastFetchedIncidentId.current = null;
         }
-        
+
         if (newStatus) {
           setCurrentVehicle((prev) => ({
             ...prev,
@@ -344,7 +349,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         }
       }
     }
-  }, [sseData, currentVehicle.vehicle_id, currentVehicle.immatriculation, vehicleStatuses, fetchIncidentById]);
+  }, [
+    sseData,
+    currentVehicle.vehicle_id,
+    currentVehicle.immatriculation,
+    vehicleStatuses,
+    fetchIncidentById,
+  ]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -463,16 +474,17 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
   // Check if vehicle is currently available (not on intervention)
   const vehicleIsAvailable = isVehicleAvailable(currentVehicle);
-  
+
   // Check if vehicle is in "retour" status
-  const vehicleIsReturning = currentVehicle.status?.label?.toLowerCase().includes("retour") || false;
+  const vehicleIsReturning =
+    currentVehicle.status?.label?.toLowerCase().includes("retour") || false;
 
   // Calculate vehicle and incident positions for map
   const vehiclePosition = currentVehicle.current_position
     ? {
-      lat: currentVehicle.current_position.latitude || 0,
-      lng: currentVehicle.current_position.longitude || 0,
-    }
+        lat: currentVehicle.current_position.latitude || 0,
+        lng: currentVehicle.current_position.longitude || 0,
+      }
     : null;
 
   // Calculate destination position based on status
@@ -483,7 +495,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     if (vehicleIsAvailable) {
       return null;
     }
-    
+
     if (vehicleIsReturning && currentVehicle.base_interest_point) {
       // Return to base
       return {
@@ -491,7 +503,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         lng: currentVehicle.base_interest_point.longitude || 0,
       };
     }
-    
+
     if (incident) {
       // Going to incident
       return {
@@ -499,12 +511,12 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         lng: incident.longitude || 0,
       };
     }
-    
+
     return null;
   })();
-  
+
   // Destination label for the map
-  const destinationLabel = vehicleIsReturning 
+  const destinationLabel = vehicleIsReturning
     ? currentVehicle.base_interest_point?.name || "Caserne"
     : incident?.address || null;
 
@@ -531,7 +543,8 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                   height={28}
                   className="object-contain"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/vehicles/vehicle_VTU.png";
+                    (e.target as HTMLImageElement).src =
+                      "/vehicles/vehicle_VTU.png";
                   }}
                 />
               </div>
@@ -661,8 +674,8 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                       <p className="font-medium">
                         {currentVehicle.current_position?.timestamp
                           ? formatDate(
-                            currentVehicle.current_position.timestamp,
-                          )
+                              currentVehicle.current_position.timestamp,
+                            )
                           : "—"}
                       </p>
                     </div>

@@ -222,8 +222,10 @@ export function TerrainMap({
 
   // Initial view state
   const initialViewState = {
-    latitude: vehiclePosition?.lat || destinationPosition?.lat || LYON_CENTER.lat,
-    longitude: vehiclePosition?.lng || destinationPosition?.lng || LYON_CENTER.lng,
+    latitude:
+      vehiclePosition?.lat || destinationPosition?.lat || LYON_CENTER.lat,
+    longitude:
+      vehiclePosition?.lng || destinationPosition?.lng || LYON_CENTER.lng,
     zoom: MAP_DEFAULT_ZOOM,
   };
 

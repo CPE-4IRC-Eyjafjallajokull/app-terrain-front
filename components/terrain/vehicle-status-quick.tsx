@@ -154,10 +154,11 @@ export function VehicleStatusQuick({
                 <Button
                   key={quickStatus.label}
                   variant="outline"
-                  className={`h-20 flex-col gap-2 transition-all relative ${isCurrent
-                    ? `${quickStatus.color} border-3 ${quickStatus.borderColor} shadow-xl scale-105 bg-gradient-to-br from-white ${quickStatus.bgColor}`
-                    : `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color} hover:scale-105 hover:shadow-lg hover:border-2`
-                    }`}
+                  className={`h-20 flex-col gap-2 transition-all relative ${
+                    isCurrent
+                      ? `${quickStatus.color} border-3 ${quickStatus.borderColor} shadow-xl scale-105 bg-gradient-to-br from-white ${quickStatus.bgColor}`
+                      : `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color} hover:scale-105 hover:shadow-lg hover:border-2`
+                  }`}
                   disabled={isDisabled || !hasMatch}
                   onClick={() => !isCurrent && handleStatusClick(quickStatus)}
                 >
