@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,7 @@ import {
   Flame,
   RefreshCw,
   LogOut,
+  Home,
 } from "lucide-react";
 import type { Vehicle, VehicleStatus } from "@/lib/vehicles/types";
 import type {
@@ -26,6 +28,7 @@ import { VehicleStatusQuick } from "./vehicle-status-quick";
 import { IncidentPanel } from "./incident-panel";
 import { TerrainMap } from "./terrain-map";
 import { VehicleHistoryDialog } from "./vehicle-history-dialog";
+import { getVehicleImagePath } from "@/lib/vehicles/images";
 import { toast } from "sonner";
 import { signOut } from "next-auth/react";
 import { useSSE } from "@/hooks/useSSE";
@@ -47,6 +50,10 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Track the current destination to prevent duplicate route fetches
+  const lastFetchedIncidentId = useRef<string | null>(null);
+  const isReturningToBase = useRef<boolean>(false);
 
   // Helper function to check if vehicle status is "Disponible" (available)
   const isVehicleAvailable = useCallback((vehicleToCheck: Vehicle): boolean => {
@@ -156,14 +163,103 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     fetchIncidentData();
   }, [fetchIncidentData]);
 
+  // Fetch incident by ID (for SSE assignment events)
+  const fetchIncidentById = useCallback(async (incidentId: string) => {
+    // Prevent duplicate fetches for the same incident
+    if (lastFetchedIncidentId.current === incidentId) {
+      return;
+    }
+    
+    lastFetchedIncidentId.current = incidentId;
+    isReturningToBase.current = false;
+
+    try {
+      const [incidentRes, engagementsRes, casualtiesRes] = await Promise.all([
+        fetch(`/api/incidents/${incidentId}`),
+        fetch(`/api/incidents/${incidentId}/engagements`),
+        fetch(`/api/incidents/${incidentId}/casualties`),
+      ]);
+
+      if (incidentRes.ok) {
+        const incidentData = await incidentRes.json();
+        setIncident(incidentData);
+        toast.success("Nouvelle intervention assignée");
+      }
+
+      if (engagementsRes.ok) {
+        const engagementsData = await engagementsRes.json();
+        setEngagements(engagementsData);
+      }
+
+      if (casualtiesRes.ok) {
+        const casualtiesData = await casualtiesRes.json();
+        setCasualties(casualtiesData);
+      }
+    } catch (err) {
+      console.error("Error fetching incident by ID:", err);
+    }
+  }, []);
+
   // SSE for live vehicle updates
   const { data: sseData, isConnected: sseConnected } = useSSE("/api/events");
 
-  // Handle SSE events for vehicle position and status updates
+  // Handle SSE events for vehicle position, status, and assignment updates
   useEffect(() => {
     if (!sseData) return;
 
     const event = sseData.event;
+    
+    // Handle vehicle_assignment event
+    if (event === "vehicle_assignment") {
+      const assignmentData = sseData.data as {
+        vehicle_id?: string;
+        vehicle_immatriculation?: string;
+        incident_id?: string;
+        incident_phase_id?: string;
+        assigned_at?: string;
+        unassigned_at?: string | null;
+      } | undefined;
+      
+      if (!assignmentData?.vehicle_id) return;
+      
+      // Only process events for the current vehicle
+      if (assignmentData.vehicle_id !== currentVehicle.vehicle_id &&
+          assignmentData.vehicle_immatriculation !== currentVehicle.immatriculation) {
+        return;
+      }
+      
+      // If there's an incident_id and no unassigned_at, fetch the incident
+      if (assignmentData.incident_id && !assignmentData.unassigned_at) {
+        fetchIncidentById(assignmentData.incident_id);
+        
+        // Update the vehicle's active assignment
+        setCurrentVehicle((prev) => ({
+          ...prev,
+          active_assignment: {
+            vehicle_assignment_id: "",
+            incident_phase_id: assignmentData.incident_phase_id || null,
+            incident_id: assignmentData.incident_id,
+            assigned_at: assignmentData.assigned_at || new Date().toISOString(),
+            assigned_by_operator_id: null,
+          },
+        }));
+      } else if (assignmentData.unassigned_at) {
+        // Vehicle was unassigned, clear incident data
+        setIncident(null);
+        setEngagements(null);
+        setCasualties(null);
+        lastFetchedIncidentId.current = null;
+        
+        setCurrentVehicle((prev) => ({
+          ...prev,
+          active_assignment: null,
+        }));
+        
+        toast.info("Intervention terminée");
+      }
+      return;
+    }
+
     const eventData = sseData.data as
       | {
         vehicle_id?: string;
@@ -194,10 +290,19 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     } else if (event === "vehicle_status_update") {
       // Update vehicle status in real-time by matching label
       if (eventData.status_label) {
+        const statusLabel = eventData.status_label.toLowerCase();
         const newStatus = vehicleStatuses.find(
-          (s) =>
-            s.label.toLowerCase() === eventData.status_label?.toLowerCase(),
+          (s) => s.label.toLowerCase() === statusLabel,
         );
+        
+        // Check if this is a "retour" status
+        const isRetourStatus = statusLabel.includes("retour");
+        if (isRetourStatus && !isReturningToBase.current) {
+          isReturningToBase.current = true;
+          // Clear incident but keep base destination for route calculation
+          lastFetchedIncidentId.current = null;
+        }
+        
         if (newStatus) {
           setCurrentVehicle((prev) => ({
             ...prev,
@@ -212,6 +317,8 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             setIncident(null);
             setEngagements(null);
             setCasualties(null);
+            lastFetchedIncidentId.current = null;
+            isReturningToBase.current = false;
           }
         } else {
           // If no matching status found, create a temporary one with the label
@@ -231,11 +338,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             setIncident(null);
             setEngagements(null);
             setCasualties(null);
+            lastFetchedIncidentId.current = null;
+            isReturningToBase.current = false;
           }
         }
       }
     }
-  }, [sseData, currentVehicle.vehicle_id, vehicleStatuses]);
+  }, [sseData, currentVehicle.vehicle_id, currentVehicle.immatriculation, vehicleStatuses, fetchIncidentById]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -323,6 +432,14 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         </Badge>
       );
     }
+    if (label.includes("retour")) {
+      return (
+        <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+          <Home className="w-4 h-4 mr-1" />
+          Retour caserne
+        </Badge>
+      );
+    }
     if (label.includes("hors service") || label.includes("indisponible")) {
       return (
         <Badge className="bg-red-100 text-red-700 border-red-200">
@@ -346,6 +463,9 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
   // Check if vehicle is currently available (not on intervention)
   const vehicleIsAvailable = isVehicleAvailable(currentVehicle);
+  
+  // Check if vehicle is in "retour" status
+  const vehicleIsReturning = currentVehicle.status?.label?.toLowerCase().includes("retour") || false;
 
   // Calculate vehicle and incident positions for map
   const vehiclePosition = currentVehicle.current_position
@@ -355,14 +475,38 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     }
     : null;
 
-  // Only show incident position if vehicle is NOT available (on intervention)
-  const incidentPosition =
-    !vehicleIsAvailable && incident
-      ? {
+  // Calculate destination position based on status
+  // - If returning to base: use base_interest_point position
+  // - If on intervention: use incident position
+  // - If available: no destination
+  const destinationPosition = (() => {
+    if (vehicleIsAvailable) {
+      return null;
+    }
+    
+    if (vehicleIsReturning && currentVehicle.base_interest_point) {
+      // Return to base
+      return {
+        lat: currentVehicle.base_interest_point.latitude || 0,
+        lng: currentVehicle.base_interest_point.longitude || 0,
+      };
+    }
+    
+    if (incident) {
+      // Going to incident
+      return {
         lat: incident.latitude || 0,
         lng: incident.longitude || 0,
-      }
-      : null;
+      };
+    }
+    
+    return null;
+  })();
+  
+  // Destination label for the map
+  const destinationLabel = vehicleIsReturning 
+    ? currentVehicle.base_interest_point?.name || "Caserne"
+    : incident?.address || null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-orange-50">
@@ -379,8 +523,17 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Truck className="w-5 h-5 text-orange-600" />
+              <div className="p-2 bg-orange-100 rounded-lg flex items-center justify-center w-10 h-10">
+                <Image
+                  src={getVehicleImagePath(currentVehicle.vehicle_type?.code)}
+                  alt={currentVehicle.vehicle_type?.code || "Véhicule"}
+                  width={28}
+                  height={28}
+                  className="object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/vehicles/vehicle_VTU.png";
+                  }}
+                />
               </div>
               <div>
                 <h1 className="font-mono font-bold text-lg">
@@ -452,9 +605,10 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             <div className="space-y-4">
               <TerrainMap
                 vehiclePosition={vehiclePosition}
-                incidentPosition={incidentPosition}
+                destinationPosition={destinationPosition}
+                destinationType={vehicleIsReturning ? "base" : "incident"}
                 vehicleLabel={currentVehicle.immatriculation}
-                incidentAddress={incident?.address}
+                destinationLabel={destinationLabel}
               />
 
               {/* Quick Actions - Status Change */}

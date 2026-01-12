@@ -22,6 +22,7 @@ import {
   ExternalLink,
   Locate,
   AlertCircle,
+  Home,
 } from "lucide-react";
 import {
   MAP_STYLE_URL,
@@ -37,11 +38,14 @@ type Position = {
   lng: number;
 };
 
+type DestinationType = "incident" | "base";
+
 type TerrainMapProps = {
   vehiclePosition: Position | null;
-  incidentPosition: Position | null;
+  destinationPosition: Position | null;
+  destinationType?: DestinationType;
   vehicleLabel?: string;
-  incidentAddress?: string | null;
+  destinationLabel?: string | null;
 };
 
 type RouteGeometry = {
@@ -55,9 +59,10 @@ type RouteGeometry = {
 
 export function TerrainMap({
   vehiclePosition,
-  incidentPosition,
+  destinationPosition,
+  destinationType = "incident",
   vehicleLabel,
-  incidentAddress,
+  destinationLabel,
 }: TerrainMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
@@ -70,10 +75,12 @@ export function TerrainMap({
   );
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const hasCalculatedRoute = useRef(false);
+  // Track the destination to detect changes and recalculate route
+  const lastDestination = useRef<string | null>(null);
 
   // Calculate route using internal geo/route API
   const calculateRoute = useCallback(async () => {
-    if (!vehiclePosition || !incidentPosition) return;
+    if (!vehiclePosition || !destinationPosition) return;
 
     setIsCalculatingRoute(true);
     try {
@@ -86,8 +93,8 @@ export function TerrainMap({
             longitude: vehiclePosition.lng,
           },
           to: {
-            latitude: incidentPosition.lat,
-            longitude: incidentPosition.lng,
+            latitude: destinationPosition.lat,
+            longitude: destinationPosition.lng,
           },
           snap_start: false,
         }),
@@ -141,20 +148,26 @@ export function TerrainMap({
     } finally {
       setIsCalculatingRoute(false);
     }
-  }, [vehiclePosition, incidentPosition]);
+  }, [vehiclePosition, destinationPosition]);
 
-  // Auto-calculate route ONCE when positions are available and map is loaded
+  // Auto-calculate route when positions are available and map is loaded
+  // Recalculate when destination changes
   useEffect(() => {
-    if (
-      vehiclePosition &&
-      incidentPosition &&
-      isMapLoaded &&
-      !hasCalculatedRoute.current
-    ) {
+    if (!vehiclePosition || !destinationPosition || !isMapLoaded) return;
+
+    // Create a destination key to detect changes
+    const destinationKey = `${destinationPosition.lat},${destinationPosition.lng}`;
+
+    // Only calculate if destination changed or never calculated
+    if (lastDestination.current !== destinationKey) {
+      lastDestination.current = destinationKey;
+      hasCalculatedRoute.current = true;
+      calculateRoute();
+    } else if (!hasCalculatedRoute.current) {
       hasCalculatedRoute.current = true;
       calculateRoute();
     }
-  }, [vehiclePosition, incidentPosition, isMapLoaded, calculateRoute]);
+  }, [vehiclePosition, destinationPosition, isMapLoaded, calculateRoute]);
 
   // Fit bounds to show both markers
   useEffect(() => {
@@ -162,11 +175,11 @@ export function TerrainMap({
 
     const map = mapRef.current.getMap();
 
-    if (vehiclePosition && incidentPosition) {
+    if (vehiclePosition && destinationPosition) {
       // Fit to both positions
       const bounds = new maplibregl.LngLatBounds(
         [vehiclePosition.lng, vehiclePosition.lat],
-        [incidentPosition.lng, incidentPosition.lat],
+        [destinationPosition.lng, destinationPosition.lat],
       );
       map.fitBounds(bounds, {
         padding: { top: 60, bottom: 60, left: 40, right: 40 },
@@ -179,19 +192,19 @@ export function TerrainMap({
         zoom: 14,
         duration: 800,
       });
-    } else if (incidentPosition) {
+    } else if (destinationPosition) {
       map.easeTo({
-        center: [incidentPosition.lng, incidentPosition.lat],
+        center: [destinationPosition.lng, destinationPosition.lat],
         zoom: 14,
         duration: 800,
       });
     }
-  }, [vehiclePosition, incidentPosition, isMapLoaded]);
+  }, [vehiclePosition, destinationPosition, isMapLoaded]);
 
   // Open in Google Maps with directions
   const openNavigation = () => {
-    if (!vehiclePosition || !incidentPosition) return;
-    const url = `https://www.google.com/maps/dir/${vehiclePosition.lat},${vehiclePosition.lng}/${incidentPosition.lat},${incidentPosition.lng}`;
+    if (!vehiclePosition || !destinationPosition) return;
+    const url = `https://www.google.com/maps/dir/${vehiclePosition.lat},${vehiclePosition.lng}/${destinationPosition.lat},${destinationPosition.lng}`;
     window.open(url, "_blank");
   };
 
@@ -205,12 +218,12 @@ export function TerrainMap({
     });
   };
 
-  const hasPositions = vehiclePosition || incidentPosition;
+  const hasPositions = vehiclePosition || destinationPosition;
 
   // Initial view state
   const initialViewState = {
-    latitude: vehiclePosition?.lat || incidentPosition?.lat || LYON_CENTER.lat,
-    longitude: vehiclePosition?.lng || incidentPosition?.lng || LYON_CENTER.lng,
+    latitude: vehiclePosition?.lat || destinationPosition?.lat || LYON_CENTER.lat,
+    longitude: vehiclePosition?.lng || destinationPosition?.lng || LYON_CENTER.lng,
     zoom: MAP_DEFAULT_ZOOM,
   };
 
@@ -221,7 +234,11 @@ export function TerrainMap({
           <div className="flex items-center gap-2">
             <Map className="w-5 h-5 text-orange-600" />
             <CardTitle className="text-lg">
-              {incidentPosition ? "Carte & Itinéraire" : "Position du véhicule"}
+              {destinationPosition
+                ? destinationType === "base"
+                  ? "Retour à la base"
+                  : "Carte & Itinéraire"
+                : "Position du véhicule"}
             </CardTitle>
           </div>
           {routeInfo && (
@@ -320,25 +337,47 @@ export function TerrainMap({
                   </Marker>
                 )}
 
-                {/* Incident Marker */}
-                {incidentPosition && (
+                {/* Destination Marker (Incident or Base) */}
+                {destinationPosition && (
                   <Marker
-                    latitude={incidentPosition.lat}
-                    longitude={incidentPosition.lng}
+                    latitude={destinationPosition.lat}
+                    longitude={destinationPosition.lng}
                     anchor="center"
                   >
                     <div
                       className="relative cursor-pointer"
                       data-map-interactive="true"
                     >
-                      <div className="absolute -inset-3 bg-orange-500/30 rounded-full animate-pulse" />
-                      <div className="relative w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
-                        <Flame className="w-5 h-5 text-white" />
+                      <div
+                        className={`absolute -inset-3 rounded-full animate-pulse ${
+                          destinationType === "base"
+                            ? "bg-green-500/30"
+                            : "bg-orange-500/30"
+                        }`}
+                      />
+                      <div
+                        className={`relative w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white ${
+                          destinationType === "base"
+                            ? "bg-green-600"
+                            : "bg-orange-600"
+                        }`}
+                      >
+                        {destinationType === "base" ? (
+                          <Home className="w-5 h-5 text-white" />
+                        ) : (
+                          <Flame className="w-5 h-5 text-white" />
+                        )}
                       </div>
-                      {incidentAddress && (
+                      {destinationLabel && (
                         <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap max-w-[120px]">
-                          <Badge className="bg-orange-600 text-white text-xs shadow-md truncate">
-                            Incident
+                          <Badge
+                            className={`text-white text-xs shadow-md truncate ${
+                              destinationType === "base"
+                                ? "bg-green-600"
+                                : "bg-orange-600"
+                            }`}
+                          >
+                            {destinationType === "base" ? "Base" : "Incident"}
                           </Badge>
                         </div>
                       )}
@@ -378,14 +417,20 @@ export function TerrainMap({
         </div>
 
         {/* Navigation Button */}
-        {vehiclePosition && incidentPosition && (
+        {vehiclePosition && destinationPosition && (
           <div className="p-3 border-t bg-muted/30">
             <Button
-              className="w-full gap-2 bg-orange-600 hover:bg-orange-700"
+              className={`w-full gap-2 ${
+                destinationType === "base"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-orange-600 hover:bg-orange-700"
+              }`}
               onClick={openNavigation}
             >
               <Navigation className="w-4 h-4" />
-              Lancer la navigation GPS
+              {destinationType === "base"
+                ? "Naviguer vers la base"
+                : "Lancer la navigation GPS"}
               <ExternalLink className="w-3 h-3 ml-1" />
             </Button>
           </div>
