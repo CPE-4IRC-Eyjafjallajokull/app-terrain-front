@@ -6,14 +6,7 @@ import { VehicleSearch } from "@/components/terrain/vehicle-search";
 import { TerrainDashboard } from "@/components/terrain/terrain-dashboard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Flame,
-  Shield,
-  Radio,
-  MapPin,
-  Truck,
-  LogIn,
-} from "lucide-react";
+import { Flame, Shield, Radio, MapPin, Truck, LogIn } from "lucide-react";
 import type { Vehicle } from "@/lib/vehicles/types";
 import Link from "next/link";
 
@@ -122,8 +115,9 @@ export default function Home() {
                   <span className="text-white/80">Pompiers Terrain</span>
                 </h2>
                 <p className="text-lg text-white/70 max-w-md">
-                  Accédez aux informations de votre véhicule et de l&apos;intervention
-                  en cours. Gérez les victimes et demandez des renforts.
+                  Accédez aux informations de votre véhicule et de
+                  l&apos;intervention en cours. Gérez les victimes et demandez
+                  des renforts.
                 </p>
               </div>
 
@@ -228,8 +222,9 @@ export default function Home() {
                 <span className="text-white/80">Pompiers Terrain</span>
               </h2>
               <p className="text-lg text-white/70 max-w-md">
-                Application dédiée aux équipes d&apos;intervention sur le terrain.
-                Accédez aux informations de votre véhicule et gérez vos interventions.
+                Application dédiée aux équipes d&apos;intervention sur le
+                terrain. Accédez aux informations de votre véhicule et gérez vos
+                interventions.
               </p>
             </div>
 
