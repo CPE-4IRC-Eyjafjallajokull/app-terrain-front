@@ -10,10 +10,11 @@ export function getVehicleImagePath(
     return "/vehicles/vehicle_VTU.png"; // Image par défaut
   }
 
-  // Normaliser le code pour gérer les cas spéciaux (espaces, tirets, etc.)
+  // Normaliser le code pour gérer les cas spéciaux (espaces, tirets, casse, etc.)
   const normalizedCode = vehicleTypeCode
     .replace(/\s+/g, "_") // Remplacer les espaces par des underscores
-    .replace(/-/g, "_"); // Remplacer les tirets par des underscores
+    .replace(/-/g, "_") // Remplacer les tirets par des underscores
+    .toUpperCase(); // Normaliser en majuscules
 
   return `/vehicles/vehicle_${normalizedCode}.png`;
 }
@@ -29,5 +30,12 @@ export function getVehicleImagePathTopView(
   if (!vehicleTypeCode) {
     return "/vehicles/vehicle_VTU_vue_dessus.png"; // Image par défaut
   }
-  return `/vehicles/vehicle_${vehicleTypeCode}_vue_dessus.png`;
+
+  // Normaliser le code
+  const normalizedCode = vehicleTypeCode
+    .replace(/\s+/g, "_")
+    .replace(/-/g, "_")
+    .toUpperCase();
+
+  return `/vehicles/vehicle_${normalizedCode}_vue_dessus.png`;
 }

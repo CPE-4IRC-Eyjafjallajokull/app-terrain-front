@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +22,7 @@ import {
   MapPin,
 } from "lucide-react";
 import type { Vehicle } from "@/lib/vehicles/types";
+import { getVehicleImagePath } from "@/lib/vehicles/images";
 
 type VehicleSearchProps = {
   onVehicleSelect: (vehicle: Vehicle) => void;
@@ -182,8 +184,18 @@ export function VehicleSearch({
                       className="w-full p-3 rounded-lg hover:bg-accent transition-colors text-left flex items-center justify-between gap-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-1.5 bg-orange-100 rounded">
-                          <Truck className="w-4 h-4 text-orange-600" />
+                        <div className="p-1.5 bg-orange-100 rounded flex items-center justify-center w-9 h-9">
+                          <Image
+                            src={getVehicleImagePath(vehicle.vehicle_type?.code)}
+                            alt={vehicle.vehicle_type?.code || "Véhicule"}
+                            width={24}
+                            height={24}
+                            className="object-contain"
+                            onError={(e) => {
+                              // Fallback to default image if not found
+                              (e.target as HTMLImageElement).src = "/vehicles/vehicle_VTU.png";
+                            }}
+                          />
                         </div>
                         <div>
                           <p className="font-mono font-semibold">
