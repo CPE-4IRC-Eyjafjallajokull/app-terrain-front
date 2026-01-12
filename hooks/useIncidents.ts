@@ -44,8 +44,12 @@ export function useIncidents(): UseIncidentsResult {
   // Data state
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
-  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
-  const [engagements, setEngagements] = useState<IncidentEngagements | null>(null);
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(
+    null,
+  );
+  const [engagements, setEngagements] = useState<IncidentEngagements | null>(
+    null,
+  );
 
   // UI state
   const [isLoading, setIsLoading] = useState(true);
@@ -67,7 +71,9 @@ export function useIncidents(): UseIncidentsResult {
       setIncidents(incidentsData);
       setVehicleTypes(typesData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch incidents");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch incidents",
+      );
       console.error("❌ Erreur lors du chargement des incidents:", err);
     } finally {
       setIsLoading(false);

@@ -13,7 +13,6 @@ import {
   Truck,
   AlertTriangle,
   Shield,
-  Users,
   Loader2,
   CheckCircle,
   Layers,
@@ -75,7 +74,8 @@ export function IncidentDetail({
   onClose,
   onReinforcementSuccess,
 }: IncidentDetailProps) {
-  const [isReinforcementDialogOpen, setIsReinforcementDialogOpen] = useState(false);
+  const [isReinforcementDialogOpen, setIsReinforcementDialogOpen] =
+    useState(false);
 
   // Check if incident is active (has at least one active phase)
   const hasActivePhases = incident.phases.some((phase) => !phase.ended_at);
@@ -84,9 +84,9 @@ export function IncidentDetail({
 
   // Get vehicle count
   const vehicleCount = engagements?.vehicle_assignments?.length || 0;
-  const activeVehicleCount = engagements?.vehicle_assignments?.filter(
-    (a) => !a.unassigned_at
-  ).length || 0;
+  const activeVehicleCount =
+    engagements?.vehicle_assignments?.filter((a) => !a.unassigned_at).length ||
+    0;
 
   return (
     <>
@@ -98,7 +98,9 @@ export function IncidentDetail({
                 <AlertTriangle className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <CardTitle className="text-lg">Détail de l&apos;incident</CardTitle>
+                <CardTitle className="text-lg">
+                  Détail de l&apos;incident
+                </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   ID: {incident.incident_id.slice(0, 8)}...
                 </p>
@@ -139,12 +141,15 @@ export function IncidentDetail({
                   )}
                   {(incident.zipcode || incident.city) && (
                     <p className="text-sm text-muted-foreground">
-                      {[incident.zipcode, incident.city].filter(Boolean).join(" ")}
+                      {[incident.zipcode, incident.city]
+                        .filter(Boolean)
+                        .join(" ")}
                     </p>
                   )}
                   {incident.latitude && incident.longitude && (
                     <p className="text-xs text-muted-foreground">
-                      {incident.latitude.toFixed(6)}, {incident.longitude.toFixed(6)}
+                      {incident.latitude.toFixed(6)},{" "}
+                      {incident.longitude.toFixed(6)}
                     </p>
                   )}
                   {!incident.address && !incident.city && (
@@ -202,7 +207,7 @@ export function IncidentDetail({
                     Phases ({incident.phases.length})
                   </div>
                 </div>
-                
+
                 {incident.phases.length === 0 ? (
                   <div className="bg-muted/50 rounded-lg p-3 text-center text-sm text-muted-foreground">
                     Aucune phase définie
@@ -222,7 +227,8 @@ export function IncidentDetail({
                                 #{phase.priority}
                               </Badge>
                               <span className="font-medium text-sm">
-                                {phase.phase_type.label || phase.phase_type.code}
+                                {phase.phase_type.label ||
+                                  phase.phase_type.code}
                               </span>
                             </div>
                             {getPhaseStatusBadge(phase)}
@@ -230,12 +236,14 @@ export function IncidentDetail({
                           {phase.started_at && (
                             <p className="text-xs text-muted-foreground">
                               Démarré à {formatDateShort(phase.started_at)}
-                              {phase.ended_at && ` - Terminé à ${formatDateShort(phase.ended_at)}`}
+                              {phase.ended_at &&
+                                ` - Terminé à ${formatDateShort(phase.ended_at)}`}
                             </p>
                           )}
                           {phase.vehicle_assignments.length > 0 && (
                             <p className="text-xs text-muted-foreground">
-                              {phase.vehicle_assignments.length} véhicule(s) assigné(s)
+                              {phase.vehicle_assignments.length} véhicule(s)
+                              assigné(s)
                             </p>
                           )}
                         </div>
@@ -260,7 +268,8 @@ export function IncidentDetail({
                       Chargement...
                     </span>
                   </div>
-                ) : !engagements || engagements.vehicle_assignments.length === 0 ? (
+                ) : !engagements ||
+                  engagements.vehicle_assignments.length === 0 ? (
                   <div className="bg-muted/50 rounded-lg p-3 text-center text-sm text-muted-foreground">
                     Aucun véhicule engagé
                   </div>
@@ -302,7 +311,9 @@ export function IncidentDetail({
                         </p>
                         {assignment.phase_type && (
                           <p className="text-xs text-muted-foreground">
-                            Phase: {assignment.phase_type.label || assignment.phase_type.code}
+                            Phase:{" "}
+                            {assignment.phase_type.label ||
+                              assignment.phase_type.code}
                           </p>
                         )}
                       </div>
@@ -319,12 +330,13 @@ export function IncidentDetail({
                   <Shield className="w-4 h-4" />
                   Demander des renforts
                 </div>
-                
+
                 {!hasActivePhases ? (
                   <div className="bg-muted/50 rounded-lg p-3 text-center text-sm text-muted-foreground">
                     <p>Aucune phase active pour cet incident.</p>
                     <p className="text-xs mt-1">
-                      Les demandes de renfort ne peuvent être faites que sur des phases actives.
+                      Les demandes de renfort ne peuvent être faites que sur des
+                      phases actives.
                     </p>
                   </div>
                 ) : (

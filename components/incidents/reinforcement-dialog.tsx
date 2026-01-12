@@ -59,7 +59,10 @@ export function ReinforcementDialog({
   const activePhases = phases.filter((phase) => !phase.ended_at);
 
   const handleAddVehicleRequest = () => {
-    setVehicleRequests([...vehicleRequests, { vehicleTypeId: "", quantity: 1 }]);
+    setVehicleRequests([
+      ...vehicleRequests,
+      { vehicleTypeId: "", quantity: 1 },
+    ]);
   };
 
   const handleRemoveVehicleRequest = (index: number) => {
@@ -126,7 +129,7 @@ export function ReinforcementDialog({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Erreur lors de l'envoi de la demande"
+          : "Erreur lors de l'envoi de la demande",
       );
     } finally {
       setIsSubmitting(false);

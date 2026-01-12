@@ -53,7 +53,9 @@ export function IncidentFiltersBar({
           <Switch
             id="show-ended"
             checked={filters.showEnded}
-            onCheckedChange={(checked: boolean) => onFiltersChange({ showEnded: checked })}
+            onCheckedChange={(checked: boolean) =>
+              onFiltersChange({ showEnded: checked })
+            }
           />
           <Label htmlFor="show-ended" className="text-sm cursor-pointer">
             Afficher les incidents terminés

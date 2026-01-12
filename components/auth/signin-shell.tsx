@@ -54,7 +54,8 @@ export default function SignInShell() {
       },
       Default: {
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite. Veuillez réessayer plus tard.",
+        description:
+          "Une erreur inattendue s'est produite. Veuillez réessayer plus tard.",
       },
     };
 

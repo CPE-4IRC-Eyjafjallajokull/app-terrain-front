@@ -7,12 +7,12 @@ export const GET = (request: NextRequest) =>
   proxyApiRequest(
     request,
     "incidents/reinforcement-vehicle-requests",
-    "reinforcement vehicle requests list"
+    "reinforcement vehicle requests list",
   );
 
 export const POST = (request: NextRequest) =>
   proxyApiRequest(
     request,
     "incidents/reinforcement-vehicle-requests",
-    "create reinforcement vehicle request"
+    "create reinforcement vehicle request",
   );
