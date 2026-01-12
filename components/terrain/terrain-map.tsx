@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -22,8 +21,8 @@ import {
   ZoomOut,
   Locate,
   AlertCircle,
+  Calculator,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 type Position = {
   lat: number;
@@ -57,10 +56,10 @@ export function TerrainMap({
     return () => clearTimeout(timer);
   }, []);
 
-  // Calculate route using OSRM
+  // Calculate route using OSRM - triggered by user action
   const calculateRoute = async () => {
     if (!vehiclePosition || !incidentPosition) return;
-
+    
     setIsCalculatingRoute(true);
     try {
       const url = `https://router.project-osrm.org/route/v1/driving/${vehiclePosition.lng},${vehiclePosition.lat};${incidentPosition.lng},${incidentPosition.lat}?overview=false`;
@@ -83,18 +82,6 @@ export function TerrainMap({
     }
   };
 
-  // Calculate route on mount if both positions are available
-  useEffect(() => {
-    if (vehiclePosition && incidentPosition) {
-      calculateRoute();
-    }
-  }, [
-    vehiclePosition?.lat,
-    vehiclePosition?.lng,
-    incidentPosition?.lat,
-    incidentPosition?.lng,
-  ]);
-
   // Open in Google Maps with directions
   const openNavigation = () => {
     if (!vehiclePosition || !incidentPosition) return;
@@ -102,18 +89,6 @@ export function TerrainMap({
     window.open(url, "_blank");
   };
 
-  // Center of the map (midpoint between vehicle and incident, or just one of them)
-  const getCenter = () => {
-    if (vehiclePosition && incidentPosition) {
-      return {
-        lat: (vehiclePosition.lat + incidentPosition.lat) / 2,
-        lng: (vehiclePosition.lng + incidentPosition.lng) / 2,
-      };
-    }
-    return vehiclePosition || incidentPosition || { lat: 45.75, lng: 4.85 }; // Default to Lyon
-  };
-
-  const center = getCenter();
   const hasPositions = vehiclePosition || incidentPosition;
 
   return (
@@ -124,7 +99,7 @@ export function TerrainMap({
             <Map className="w-5 h-5 text-primary" />
             <CardTitle className="text-lg">Carte & Itinéraire</CardTitle>
           </div>
-          {routeInfo && (
+          {routeInfo ? (
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="gap-1">
                 <Route className="w-3 h-3" />
@@ -135,7 +110,22 @@ export function TerrainMap({
                 {routeInfo.duration}
               </Badge>
             </div>
-          )}
+          ) : vehiclePosition && incidentPosition ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={calculateRoute}
+              disabled={isCalculatingRoute}
+              className="gap-1"
+            >
+              {isCalculatingRoute ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Calculator className="w-3 h-3" />
+              )}
+              Calculer
+            </Button>
+          ) : null}
         </div>
       </CardHeader>
 
@@ -231,8 +221,7 @@ export function TerrainMap({
                 {/* Map info overlay */}
                 <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
                   <div className="text-xs text-muted-foreground bg-white/80 px-2 py-1 rounded">
-                    Carte simplifiée - Installez MapLibre pour la carte
-                    interactive
+                    Carte simplifiée - Installez MapLibre pour la carte interactive
                   </div>
                 </div>
               </div>
@@ -261,7 +250,10 @@ export function TerrainMap({
         {/* Navigation Button */}
         {vehiclePosition && incidentPosition && (
           <div className="p-3 border-t bg-muted/30">
-            <Button className="w-full gap-2" onClick={openNavigation}>
+            <Button
+              className="w-full gap-2"
+              onClick={openNavigation}
+            >
               <Navigation className="w-4 h-4" />
               Lancer la navigation GPS
               <ExternalLink className="w-3 h-3 ml-1" />

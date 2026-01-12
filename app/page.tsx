@@ -1,12 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { VehicleSearch } from "@/components/terrain/vehicle-search";
 import { TerrainDashboard } from "@/components/terrain/terrain-dashboard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Flame, Shield, Radio, MapPin, Truck, LogIn } from "lucide-react";
+import {
+  Flame,
+  Shield,
+  Radio,
+  MapPin,
+  Truck,
+  LogIn,
+} from "lucide-react";
 import type { Vehicle } from "@/lib/vehicles/types";
 import Link from "next/link";
 
@@ -31,26 +38,30 @@ function FeatureCard({
   );
 }
 
+// Helper function to get stored vehicle from localStorage
+function getStoredVehicle(): Vehicle | null {
+  if (typeof window === "undefined") return null;
+  const storedVehicle = localStorage.getItem("terrain_selected_vehicle");
+  if (storedVehicle) {
+    try {
+      return JSON.parse(storedVehicle);
+    } catch {
+      localStorage.removeItem("terrain_selected_vehicle");
+    }
+  }
+  return null;
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
-
-  // Check for stored vehicle on mount
-  useEffect(() => {
-    if (status === "authenticated") {
-      const storedVehicle = localStorage.getItem("terrain_selected_vehicle");
-      if (storedVehicle) {
-        try {
-          const vehicle = JSON.parse(storedVehicle);
-          setSelectedVehicle(vehicle);
-        } catch {
-          localStorage.removeItem("terrain_selected_vehicle");
-        }
-      }
+  // Use lazy initialization to avoid setState in useEffect
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(() => {
+    // Only run on client side and when we might be authenticated
+    if (typeof window !== "undefined") {
+      return getStoredVehicle();
     }
-    setIsLoadingFromStorage(false);
-  }, [status]);
+    return null;
+  });
 
   // Handle vehicle selection
   const handleVehicleSelect = (vehicle: Vehicle) => {
@@ -65,7 +76,7 @@ export default function Home() {
   };
 
   // Loading state
-  if (status === "loading" || isLoadingFromStorage) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 text-center">
@@ -111,9 +122,8 @@ export default function Home() {
                   <span className="text-white/80">Pompiers Terrain</span>
                 </h2>
                 <p className="text-lg text-white/70 max-w-md">
-                  Accédez aux informations de votre véhicule et de
-                  l&apos;intervention en cours. Gérez les victimes et demandez
-                  des renforts.
+                  Accédez aux informations de votre véhicule et de l&apos;intervention
+                  en cours. Gérez les victimes et demandez des renforts.
                 </p>
               </div>
 
@@ -218,9 +228,8 @@ export default function Home() {
                 <span className="text-white/80">Pompiers Terrain</span>
               </h2>
               <p className="text-lg text-white/70 max-w-md">
-                Application dédiée aux équipes d&apos;intervention sur le
-                terrain. Accédez aux informations de votre véhicule et gérez vos
-                interventions.
+                Application dédiée aux équipes d&apos;intervention sur le terrain.
+                Accédez aux informations de votre véhicule et gérez vos interventions.
               </p>
             </div>
 
