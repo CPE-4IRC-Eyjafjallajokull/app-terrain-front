@@ -1,453 +1,308 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { VehicleSearch } from "@/components/terrain/vehicle-search";
+import { TerrainDashboard } from "@/components/terrain/terrain-dashboard";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Header } from "@/components/header";
-import Link from "next/link";
 import {
-  ArrowRight,
-  Building2,
-  Truck,
   Flame,
-  AlertTriangle,
-  Activity,
-  RefreshCw,
-  Siren,
+  Shield,
+  Radio,
+  MapPin,
+  Truck,
+  LogIn,
 } from "lucide-react";
-import type { InterestPoint } from "@/lib/interest-points/types";
+import type { Vehicle } from "@/lib/vehicles/types";
+import Link from "next/link";
 
-type DashboardStats = {
-  vehiclesOnIntervention: number;
-  vehiclesAvailable: number;
-  totalVehicles: number;
-  activeIncidents: number;
-  totalIncidents: number;
-  totalCasualties: number;
-  fireStationsCount: number;
-};
+// Feature card component for the signin side
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 space-y-2">
+      <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white/90">
+        {icon}
+      </div>
+      <h3 className="font-semibold text-white text-sm">{title}</h3>
+      <p className="text-xs text-white/60">{description}</p>
+    </div>
+  );
+}
 
 export default function Home() {
-  const { data: session } = useSession();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: session, status } = useSession();
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
 
-  const fetchStats = useCallback(async () => {
-    if (!session?.accessToken) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Fetch vehicles and incidents in parallel
-      const [vehiclesRes, incidentsRes, kindsRes] = await Promise.all([
-        fetch("/api/vehicles"),
-        fetch("/api/incidents"),
-        fetch("/api/interest-points/kinds"),
-      ]);
-
-      if (!vehiclesRes.ok || !incidentsRes.ok || !kindsRes.ok) {
-        throw new Error("Erreur lors de la récupération des données");
-      }
-
-      const vehiclesData = await vehiclesRes.json();
-      const incidents = await incidentsRes.json();
-      const kinds = await kindsRes.json();
-
-      // Extract vehicles array from QGVehiclesListRead structure
-      const vehicles = vehiclesData?.vehicles || [];
-
-      // Find fire station kind id
-      const fireStationKind = Array.isArray(kinds)
-        ? kinds.find(
-            (k: { label?: string }) =>
-              k.label?.toLowerCase() === "centre de secours",
-          )
-        : null;
-      const fireStationKindId = fireStationKind?.interest_point_kind_id;
-
-      // Fetch fire stations by kind id
-      let fireStations: InterestPoint[] = [];
-      if (fireStationKindId) {
-        const fireStationsRes = await fetch(
-          `/api/interest-points/by-kind/${fireStationKindId}`,
-        );
-        if (fireStationsRes.ok) {
-          fireStations = await fireStationsRes.json();
+  // Check for stored vehicle on mount
+  useEffect(() => {
+    if (status === "authenticated") {
+      const storedVehicle = localStorage.getItem("terrain_selected_vehicle");
+      if (storedVehicle) {
+        try {
+          const vehicle = JSON.parse(storedVehicle);
+          setSelectedVehicle(vehicle);
+        } catch {
+          localStorage.removeItem("terrain_selected_vehicle");
         }
       }
-
-      // Calculate stats - check both status.code and status.label
-      const vehiclesOnIntervention = vehicles.filter(
-        (v: { status?: { code?: string; label?: string } }) => {
-          const statusCode = v.status?.code?.toUpperCase();
-          const statusLabel = v.status?.label?.toUpperCase();
-          return (
-            statusCode === "INTERVENTION" ||
-            statusCode === "EN_ROUTE" ||
-            statusCode === "SUR_PLACE" ||
-            statusLabel?.includes("INTERVENTION") ||
-            statusLabel?.includes("EN ROUTE")
-          );
-        },
-      ).length;
-
-      const vehiclesAvailable = vehicles.filter(
-        (v: { status?: { code?: string; label?: string } }) => {
-          const statusCode = v.status?.code?.toUpperCase();
-          const statusLabel = v.status?.label?.toUpperCase();
-          return (
-            (statusCode === "DISPONIBLE" ||
-              statusCode === "AVAILABLE" ||
-              statusLabel?.includes("DISPONIBLE") ||
-              statusLabel?.includes("AVAILABLE")) &&
-            // Exclure les véhicules indisponibles
-            statusCode !== "INDISPONIBLE" &&
-            statusCode !== "UNAVAILABLE" &&
-            !statusLabel?.includes("INDISPONIBLE") &&
-            !statusLabel?.includes("UNAVAILABLE")
-          );
-        },
-      ).length;
-
-      const activeIncidents = incidents.filter(
-        (i: { ended_at?: string | null }) => !i.ended_at,
-      ).length;
-
-      setStats({
-        vehiclesOnIntervention,
-        vehiclesAvailable,
-        totalVehicles: vehicles.length,
-        activeIncidents,
-        totalIncidents: incidents.length,
-        totalCasualties: 0,
-        fireStationsCount: fireStations.length,
-      });
-    } catch (err) {
-      console.error("Erreur détaillée:", err);
-      setError(
-        "Impossible de charger les statistiques. Vérifiez votre connexion.",
-      );
-      // Set default values to avoid showing "-"
-      setStats({
-        vehiclesOnIntervention: 0,
-        vehiclesAvailable: 0,
-        totalVehicles: 0,
-        activeIncidents: 0,
-        totalIncidents: 0,
-        totalCasualties: 0,
-        fireStationsCount: 0,
-      });
-    } finally {
-      setIsLoading(false);
     }
-  }, [session?.accessToken]);
+    setIsLoadingFromStorage(false);
+  }, [status]);
 
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+  // Handle vehicle selection
+  const handleVehicleSelect = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    localStorage.setItem("terrain_selected_vehicle", JSON.stringify(vehicle));
+  };
 
-  const StatCard = ({
-    title,
-    value,
-    subtitle,
-    icon: Icon,
-    href,
-    color,
-    badge,
-  }: {
-    title: string;
-    value: number | string;
-    subtitle: string;
-    icon: React.ComponentType<{ className?: string }>;
-    href: string;
-    color: string;
-    badge?: string;
-  }) => (
-    <Link href={href} className="block">
-      <Card className="hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer border-primary/10 group">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
-                {title}
-              </p>
-              <div className="flex items-baseline gap-2">
-                {isLoading ? (
-                  <Skeleton className="h-9 w-16" />
-                ) : (
-                  <span className={`text-3xl font-bold ${color}`}>{value}</span>
-                )}
-                {badge && (
-                  <Badge variant="secondary" className="text-xs">
-                    {badge}
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
-            </div>
-            <div
-              className={`p-3 rounded-xl ${color.replace("text-", "bg-")}/10 group-hover:${color.replace("text-", "bg-")}/20 transition-colors`}
-            >
-              <Icon className={`w-6 h-6 ${color}`} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
+  // Handle back to search
+  const handleBack = () => {
+    setSelectedVehicle(null);
+    localStorage.removeItem("terrain_selected_vehicle");
+  };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
-      <Header />
-
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="space-y-8">
-          {/* Hero Section */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary/80 p-8 text-primary-foreground">
-            <div className="absolute top-0 right-0 opacity-10">
-              <Flame className="w-48 h-48 -mt-8 -mr-8" />
-            </div>
-            <div className="relative z-10 flex items-center justify-between">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">
-                  Tableau de bord
-                </h1>
-                <p className="text-primary-foreground/80 max-w-xl">
-                  Vue d&apos;ensemble des opérations en cours sur le territoire
-                  SDMIS
-                </p>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={fetchStats}
-                disabled={isLoading}
-                className="shadow-lg"
-              >
-                <RefreshCw
-                  className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-                />
-                Actualiser
-              </Button>
-            </div>
-          </div>
-
-          {/* Error State */}
-          {error && (
-            <Card className="border-destructive/50 bg-destructive/5">
-              <CardContent className="p-4 flex items-center gap-3 text-destructive">
-                <AlertTriangle className="w-5 h-5" />
-                <span>{error}</span>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Stats Widgets Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Véhicules en intervention"
-              value={stats?.vehiclesOnIntervention ?? 0}
-              subtitle={`sur ${stats?.totalVehicles ?? 0} véhicules`}
-              icon={Siren}
-              href="/vehicles"
-              color="text-red-600"
-              badge="En cours"
-            />
-            <StatCard
-              title="Incidents actifs"
-              value={stats?.activeIncidents ?? 0}
-              subtitle={`Total: ${stats?.totalIncidents ?? 0} incidents`}
-              icon={AlertTriangle}
-              href="/incidents"
-              color="text-orange-600"
-              badge="En temps réel"
-            />
-            <StatCard
-              title="Véhicules disponibles"
-              value={stats?.vehiclesAvailable ?? 0}
-              subtitle={`Prêts à intervenir`}
-              icon={Truck}
-              href="/vehicles"
-              color="text-green-600"
-            />
-            <StatCard
-              title="Centres de secours"
-              value={stats?.fireStationsCount ?? 0}
-              subtitle="Points d'intérêt actifs"
-              icon={Building2}
-              href="/fire-stations"
-              color="text-blue-600"
-            />
-          </div>
-
-          {/* Quick Access Cards */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Incidents Card */}
-            <Card className="hover:shadow-lg transition-shadow border-primary/10 group">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-orange-100 dark:bg-orange-900/30 rounded-xl group-hover:scale-110 transition-transform">
-                    <AlertTriangle className="w-5 h-5 text-orange-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Incidents</CardTitle>
-                    <CardDescription>Gestion des interventions</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-baseline gap-3">
-                  {isLoading ? (
-                    <Skeleton className="h-10 w-20" />
-                  ) : (
-                    <span className="text-4xl font-bold text-orange-600">
-                      {stats?.activeIncidents ?? 0}
-                    </span>
-                  )}
-                  <span className="text-sm text-muted-foreground">
-                    en cours
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Suivez les incidents en cours, déclarez les victimes et gérez
-                  les engagements véhicules.
-                </p>
-                <Link href="/incidents">
-                  <Button className="w-full group-hover:bg-primary/90">
-                    Voir les incidents
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Fire Stations Card */}
-            <Card className="hover:shadow-lg transition-shadow border-primary/10 group">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-xl group-hover:scale-110 transition-transform">
-                    <Building2 className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">
-                      Centres de Secours
-                    </CardTitle>
-                    <CardDescription>
-                      Casernes et points d&apos;intérêt
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-baseline gap-3">
-                  {isLoading ? (
-                    <Skeleton className="h-10 w-20" />
-                  ) : (
-                    <span className="text-4xl font-bold text-blue-600">
-                      {stats?.fireStationsCount ?? 0}
-                    </span>
-                  )}
-                  <span className="text-sm text-muted-foreground">centres</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Consultez la liste des centres de secours et leurs
-                  localisations sur le territoire.
-                </p>
-                <Link href="/fire-stations">
-                  <Button className="w-full group-hover:bg-primary/90">
-                    Voir les centres
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Vehicles Card */}
-            <Card className="hover:shadow-lg transition-shadow border-primary/10 group">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-green-100 dark:bg-green-900/30 rounded-xl group-hover:scale-110 transition-transform">
-                    <Truck className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Véhicules</CardTitle>
-                    <CardDescription>Suivi en temps réel</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-baseline gap-3">
-                  {isLoading ? (
-                    <Skeleton className="h-10 w-20" />
-                  ) : (
-                    <>
-                      <span className="text-4xl font-bold text-green-600">
-                        {stats?.vehiclesAvailable ?? 0}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        disponibles
-                      </span>
-                      <span className="text-lg text-muted-foreground">
-                        / {stats?.totalVehicles ?? 0}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Suivez l&apos;état et la position des véhicules, filtrez par
-                  type ou statut.
-                </p>
-                <Link href="/vehicles">
-                  <Button className="w-full group-hover:bg-primary/90">
-                    Voir les véhicules
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Activity Indicator */}
-          <Card className="border-primary/10">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Activity className="w-5 h-5 text-green-600" />
-                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Système opérationnel</p>
-                    <p className="text-xs text-muted-foreground">
-                      Données synchronisées avec l&apos;API SDMIS
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-green-600 border-green-200"
-                >
-                  En ligne
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+  // Loading state
+  if (status === "loading" || isLoadingFromStorage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="space-y-4 text-center">
+          <Skeleton className="w-16 h-16 rounded-xl mx-auto" />
+          <Skeleton className="w-48 h-6 mx-auto" />
+          <Skeleton className="w-32 h-4 mx-auto" />
         </div>
-      </main>
+      </div>
+    );
+  }
+
+  // If vehicle is selected, show dashboard
+  if (session && selectedVehicle) {
+    return <TerrainDashboard vehicle={selectedVehicle} onBack={handleBack} />;
+  }
+
+  // If authenticated but no vehicle selected, show search
+  if (session) {
+    return (
+      <div className="min-h-screen flex">
+        {/* Left Side - Branding */}
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:24px_24px] opacity-30" />
+
+          <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground w-full">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                  <Flame className="w-7 h-7" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight">SDMIS</h1>
+                  <p className="text-sm text-white/70">Application Terrain</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-4xl font-bold leading-tight mb-4">
+                  Interface
+                  <br />
+                  <span className="text-white/80">Pompiers Terrain</span>
+                </h2>
+                <p className="text-lg text-white/70 max-w-md">
+                  Accédez aux informations de votre véhicule et de l&apos;intervention
+                  en cours. Gérez les victimes et demandez des renforts.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <FeatureCard
+                  icon={<Truck className="w-5 h-5" />}
+                  title="Mon véhicule"
+                  description="Statut et position en temps réel"
+                />
+                <FeatureCard
+                  icon={<MapPin className="w-5 h-5" />}
+                  title="Navigation"
+                  description="Itinéraire vers l'incident"
+                />
+                <FeatureCard
+                  icon={<Shield className="w-5 h-5" />}
+                  title="Renforts"
+                  description="Demande rapide"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 text-sm text-white/50">
+              <span>Service départemental-Métropolitain</span>
+              <span className="w-1 h-1 rounded-full bg-white/30" />
+              <span>Incendie et Secours</span>
+              <span className="w-1 h-1 rounded-full bg-white/30" />
+              <span>Lyon</span>
+            </div>
+          </div>
+
+          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute -top-20 -left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl" />
+        </div>
+
+        {/* Right Side - Vehicle Search */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-background">
+          <div className="w-full max-w-md space-y-8">
+            {/* Mobile logo */}
+            <div className="lg:hidden text-center mb-8">
+              <div className="inline-flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+                  <Flame className="w-7 h-7 text-primary-foreground" />
+                </div>
+                <div className="text-left">
+                  <h1 className="text-xl font-bold text-foreground">SDMIS</h1>
+                  <p className="text-xs text-muted-foreground">
+                    Application Terrain
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Welcome message */}
+            <div className="text-center lg:text-left">
+              <h2 className="text-2xl font-semibold mb-2">
+                Bonjour, {session.user?.name?.split(" ")[0] || "Pompier"} 👋
+              </h2>
+              <p className="text-muted-foreground">
+                Recherchez votre véhicule pour accéder à votre intervention
+              </p>
+            </div>
+
+            {/* Vehicle Search */}
+            <VehicleSearch onVehicleSelect={handleVehicleSelect} />
+
+            <p className="text-center text-xs text-muted-foreground px-4">
+              Entrez l&apos;immatriculation du véhicule auquel vous êtes affecté
+              pour accéder aux informations de l&apos;intervention.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated - Show signin prompt
+  return (
+    <div className="min-h-screen flex">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:24px_24px] opacity-30" />
+
+        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground w-full">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                <Flame className="w-7 h-7" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">SDMIS</h1>
+                <p className="text-sm text-white/70">Application Terrain</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-4xl font-bold leading-tight mb-4">
+                Interface
+                <br />
+                <span className="text-white/80">Pompiers Terrain</span>
+              </h2>
+              <p className="text-lg text-white/70 max-w-md">
+                Application dédiée aux équipes d&apos;intervention sur le terrain.
+                Accédez aux informations de votre véhicule et gérez vos interventions.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <FeatureCard
+                icon={<Radio className="w-5 h-5" />}
+                title="Temps réel"
+                description="Suivi live de l'intervention"
+              />
+              <FeatureCard
+                icon={<MapPin className="w-5 h-5" />}
+                title="Navigation"
+                description="Itinéraire GPS intégré"
+              />
+              <FeatureCard
+                icon={<Truck className="w-5 h-5" />}
+                title="Véhicule"
+                description="Gestion du statut"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-sm text-white/50">
+            <span>Service départemental-Métropolitain</span>
+            <span className="w-1 h-1 rounded-full bg-white/30" />
+            <span>Incendie et Secours</span>
+            <span className="w-1 h-1 rounded-full bg-white/30" />
+            <span>Lyon</span>
+          </div>
+        </div>
+
+        <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl" />
+      </div>
+
+      {/* Right Side - Sign In Prompt */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-background">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile logo */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="inline-flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+                <Flame className="w-7 h-7 text-primary-foreground" />
+              </div>
+              <div className="text-left">
+                <h1 className="text-xl font-bold text-foreground">SDMIS</h1>
+                <p className="text-xs text-muted-foreground">
+                  Application Terrain
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Sign in card */}
+          <div className="bg-card border rounded-xl p-8 shadow-xl shadow-black/5 space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-semibold">Connexion requise</h2>
+              <p className="text-muted-foreground">
+                Authentifiez-vous pour accéder à l&apos;application terrain
+              </p>
+            </div>
+
+            <Link href="/auth/signin">
+              <Button className="w-full h-12 text-base gap-2" size="lg">
+                <LogIn className="w-5 h-5" />
+                Se connecter
+              </Button>
+            </Link>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground px-4">
+            Accès réservé aux personnels habilités du SDMIS.
+            <br />
+            Toute tentative d&apos;accès non autorisé est enregistrée.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
