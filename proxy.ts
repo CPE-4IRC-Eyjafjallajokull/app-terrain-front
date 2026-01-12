@@ -2,8 +2,7 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
 const isPublicPath = (pathname: string) =>
-  pathname === "/auth/signin" ||
-  pathname.startsWith("/auth/error");
+  pathname === "/auth/signin" || pathname.startsWith("/auth/error");
 
 export const proxy = auth((req) => {
   const { nextUrl } = req;
