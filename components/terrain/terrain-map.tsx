@@ -70,30 +70,67 @@ export function TerrainMap({
   );
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
 
-  // Calculate route using OSRM
+  // Calculate route using internal geo/route API
   const calculateRoute = useCallback(async () => {
     if (!vehiclePosition || !incidentPosition) return;
 
     setIsCalculatingRoute(true);
     try {
-      const url = `https://router.project-osrm.org/route/v1/driving/${vehiclePosition.lng},${vehiclePosition.lat};${incidentPosition.lng},${incidentPosition.lat}?overview=full&geometries=geojson`;
-      const response = await fetch(url);
+      const response = await fetch("/api/geo/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: {
+            latitude: vehiclePosition.lat,
+            longitude: vehiclePosition.lng,
+          },
+          to: {
+            latitude: incidentPosition.lat,
+            longitude: incidentPosition.lng,
+          },
+          snap_start: false,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Route calculation failed");
+      }
+
       const data = await response.json();
 
-      if (data.routes && data.routes[0]) {
-        const route = data.routes[0];
-        const distanceKm = (route.distance / 1000).toFixed(1);
-        const durationMin = Math.round(route.duration / 60);
+      if (data) {
+        // Extract distance and duration from response
+        const distanceKm = data.distance_km
+          ? data.distance_km.toFixed(1)
+          : data.distance
+            ? (data.distance / 1000).toFixed(1)
+            : "?";
+        const durationMin = data.duration_min
+          ? Math.round(data.duration_min)
+          : data.duration
+            ? Math.round(data.duration / 60)
+            : "?";
+
         setRouteInfo({
           distance: `${distanceKm} km`,
           duration: `${durationMin} min`,
         });
 
-        // Set route geometry for display on map
-        if (route.geometry) {
+        // Set route geometry for display on map (GeoJSON LineString)
+        if (data.geometry) {
           setRouteGeometry({
             type: "Feature",
-            geometry: route.geometry,
+            geometry: data.geometry,
+            properties: {},
+          });
+        } else if (data.polyline) {
+          // If API returns polyline coordinates array
+          setRouteGeometry({
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: data.polyline,
+            },
             properties: {},
           });
         }

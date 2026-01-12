@@ -376,7 +376,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                       <p className="font-medium">
                         {currentVehicle.energy?.label || "—"}
                         {currentVehicle.energy_level != null &&
-                          ` (${currentVehicle.energy_level}%)`}
+                          ` (${Math.round(currentVehicle.energy_level * 100)}%)`}
                       </p>
                     </div>
                     <div>
