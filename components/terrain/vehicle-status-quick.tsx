@@ -163,7 +163,9 @@ export function VehicleStatusQuick({
                   onClick={() => handleStatusClick(quickStatus)}
                 >
                   <Icon className="w-5 h-5" />
-                  <span className="text-xs font-medium">{quickStatus.label}</span>
+                  <span className="text-xs font-medium">
+                    {quickStatus.label}
+                  </span>
                 </Button>
               );
             })}
@@ -177,14 +179,20 @@ export function VehicleStatusQuick({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer le changement de statut</AlertDialogTitle>
+            <AlertDialogTitle>
+              Confirmer le changement de statut
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir passer le statut à &quot;{pendingStatus?.label}&quot; ?
+              Êtes-vous sûr de vouloir passer le statut à &quot;
+              {pendingStatus?.label}&quot; ?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isChanging}>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmChange} disabled={isChanging}>
+            <AlertDialogAction
+              onClick={handleConfirmChange}
+              disabled={isChanging}
+            >
               {isChanging ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />

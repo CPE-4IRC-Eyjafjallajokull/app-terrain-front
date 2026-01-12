@@ -88,7 +88,12 @@ export function TerrainMap({
     if (vehiclePosition && incidentPosition) {
       calculateRoute();
     }
-  }, [vehiclePosition?.lat, vehiclePosition?.lng, incidentPosition?.lat, incidentPosition?.lng]);
+  }, [
+    vehiclePosition?.lat,
+    vehiclePosition?.lng,
+    incidentPosition?.lat,
+    incidentPosition?.lng,
+  ]);
 
   // Open in Google Maps with directions
   const openNavigation = () => {
@@ -226,7 +231,8 @@ export function TerrainMap({
                 {/* Map info overlay */}
                 <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
                   <div className="text-xs text-muted-foreground bg-white/80 px-2 py-1 rounded">
-                    Carte simplifiée - Installez MapLibre pour la carte interactive
+                    Carte simplifiée - Installez MapLibre pour la carte
+                    interactive
                   </div>
                 </div>
               </div>
@@ -255,10 +261,7 @@ export function TerrainMap({
         {/* Navigation Button */}
         {vehiclePosition && incidentPosition && (
           <div className="p-3 border-t bg-muted/30">
-            <Button
-              className="w-full gap-2"
-              onClick={openNavigation}
-            >
+            <Button className="w-full gap-2" onClick={openNavigation}>
               <Navigation className="w-4 h-4" />
               Lancer la navigation GPS
               <ExternalLink className="w-3 h-3 ml-1" />

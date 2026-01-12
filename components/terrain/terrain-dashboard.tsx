@@ -31,7 +31,12 @@ import {
   RefreshCw,
 } from "lucide-react";
 import type { Vehicle, VehicleStatus } from "@/lib/vehicles/types";
-import type { Incident, IncidentEngagements, IncidentCasualties, VehicleType } from "@/lib/incidents/types";
+import type {
+  Incident,
+  IncidentEngagements,
+  IncidentCasualties,
+  VehicleType,
+} from "@/lib/incidents/types";
 import { VehicleStatusQuick } from "./vehicle-status-quick";
 import { IncidentPanel } from "./incident-panel";
 import { TerrainMap } from "./terrain-map";
@@ -44,7 +49,9 @@ type TerrainDashboardProps = {
 
 export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   const [incident, setIncident] = useState<Incident | null>(null);
-  const [engagements, setEngagements] = useState<IncidentEngagements | null>(null);
+  const [engagements, setEngagements] = useState<IncidentEngagements | null>(
+    null,
+  );
   const [casualties, setCasualties] = useState<IncidentCasualties | null>(null);
   const [vehicleStatuses, setVehicleStatuses] = useState<VehicleStatus[]>([]);
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
@@ -55,7 +62,10 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
   // Fetch incident data linked to the vehicle's active assignment
   const fetchIncidentData = useCallback(async () => {
-    if (!vehicle.active_assignment?.incident_id && !vehicle.active_assignment?.incident_phase_id) {
+    if (
+      !vehicle.active_assignment?.incident_id &&
+      !vehicle.active_assignment?.incident_phase_id
+    ) {
       setIsLoading(false);
       return;
     }
@@ -63,7 +73,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     try {
       // Get incident ID from assignment
       let incidentId = vehicle.active_assignment.incident_id;
-      
+
       // If we only have phase_id, we need to get the incident from the phase
       if (!incidentId && vehicle.active_assignment.incident_phase_id) {
         // Try to fetch the incident through engagements or another API
@@ -73,8 +83,10 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
           const incidents = await incidentsRes.json();
           const matchingIncident = incidents.find((inc: Incident) =>
             inc.phases?.some(
-              (p) => p.incident_phase_id === vehicle.active_assignment?.incident_phase_id
-            )
+              (p) =>
+                p.incident_phase_id ===
+                vehicle.active_assignment?.incident_phase_id,
+            ),
           );
           if (matchingIncident) {
             incidentId = matchingIncident.incident_id;
@@ -88,7 +100,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
       }
 
       // Fetch incident details, engagements, and casualties in parallel
-      const [incidentRes, engagementsRes, casualtiesRes, statusesRes, typesRes] = await Promise.all([
+      const [
+        incidentRes,
+        engagementsRes,
+        casualtiesRes,
+        statusesRes,
+        typesRes,
+      ] = await Promise.all([
         fetch(`/api/incidents/${incidentId}`),
         fetch(`/api/incidents/${incidentId}/engagements`),
         fetch(`/api/incidents/${incidentId}/casualties`),
@@ -152,13 +170,17 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
   const handleStatusChange = async (newStatusId: string) => {
     try {
-      const response = await fetch(`/api/vehicles/${currentVehicle.vehicle_id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status_id: newStatusId }),
-      });
+      const response = await fetch(
+        `/api/vehicles/${currentVehicle.vehicle_id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status_id: newStatusId }),
+        },
+      );
 
-      if (!response.ok) throw new Error("Erreur lors de la mise à jour du statut");
+      if (!response.ok)
+        throw new Error("Erreur lors de la mise à jour du statut");
 
       const updatedVehicle = await response.json();
       setCurrentVehicle(updatedVehicle);
@@ -171,7 +193,9 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   const handleCasualtyUpdate = async () => {
     if (!incident) return;
     try {
-      const res = await fetch(`/api/incidents/${incident.incident_id}/casualties`);
+      const res = await fetch(
+        `/api/incidents/${incident.incident_id}/casualties`,
+      );
       if (res.ok) {
         const data = await res.json();
         setCasualties(data);
@@ -192,7 +216,11 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         </Badge>
       );
     }
-    if (label.includes("engagé") || label.includes("intervention") || label.includes("sur place")) {
+    if (
+      label.includes("engagé") ||
+      label.includes("intervention") ||
+      label.includes("sur place")
+    ) {
       return (
         <Badge className="bg-orange-100 text-orange-700 border-orange-200">
           <AlertTriangle className="w-4 h-4 mr-1" />
@@ -216,11 +244,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         </Badge>
       );
     }
-    return (
-      <Badge variant="secondary">
-        {status?.label || "Inconnu"}
-      </Badge>
-    );
+    return <Badge variant="secondary">{status?.label || "Inconnu"}</Badge>;
   };
 
   const formatDate = (dateString: string) => {
@@ -285,7 +309,9 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
               onClick={handleRefresh}
               disabled={isRefreshing}
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -329,20 +355,25 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
                     <Truck className="w-5 h-5 text-primary" />
-                    <CardTitle className="text-lg">Informations véhicule</CardTitle>
+                    <CardTitle className="text-lg">
+                      Informations véhicule
+                    </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <p className="text-muted-foreground">Type</p>
-                      <p className="font-medium">{currentVehicle.vehicle_type?.label || "—"}</p>
+                      <p className="font-medium">
+                        {currentVehicle.vehicle_type?.label || "—"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Énergie</p>
                       <p className="font-medium">
                         {currentVehicle.energy?.label || "—"}
-                        {currentVehicle.energy_level != null && ` (${currentVehicle.energy_level}%)`}
+                        {currentVehicle.energy_level != null &&
+                          ` (${currentVehicle.energy_level}%)`}
                       </p>
                     </div>
                     <div>
@@ -352,10 +383,14 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Position mise à jour</p>
+                      <p className="text-muted-foreground">
+                        Position mise à jour
+                      </p>
                       <p className="font-medium">
                         {currentVehicle.current_position?.timestamp
-                          ? formatDate(currentVehicle.current_position.timestamp)
+                          ? formatDate(
+                              currentVehicle.current_position.timestamp,
+                            )
                           : "—"}
                       </p>
                     </div>
@@ -379,9 +414,12 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                       <Flame className="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <h3 className="font-semibold mb-1">Aucun incident assigné</h3>
+                    <h3 className="font-semibold mb-1">
+                      Aucun incident assigné
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      Ce véhicule n&apos;est actuellement affecté à aucune intervention
+                      Ce véhicule n&apos;est actuellement affecté à aucune
+                      intervention
                     </p>
                   </CardContent>
                 </Card>

@@ -67,7 +67,7 @@ export function VehicleSearch({
     if (searchQuery.length >= 2) {
       const query = searchQuery.toUpperCase();
       const filtered = vehicles.filter((v) =>
-        v.immatriculation.toUpperCase().includes(query)
+        v.immatriculation.toUpperCase().includes(query),
       );
       setFilteredVehicles(filtered);
       setShowResults(true);
@@ -83,7 +83,7 @@ export function VehicleSearch({
       setShowResults(false);
       onVehicleSelect(vehicle);
     },
-    [onVehicleSelect]
+    [onVehicleSelect],
   );
 
   const handleSearchSubmit = useCallback(
@@ -96,7 +96,7 @@ export function VehicleSearch({
         setShowResults(true);
       }
     },
-    [filteredVehicles, handleSelectVehicle]
+    [filteredVehicles, handleSelectVehicle],
   );
 
   const getStatusBadge = (status: { label?: string } | null) => {
@@ -200,13 +200,17 @@ export function VehicleSearch({
             </ScrollArea>
           )}
 
-          {showResults && searchQuery.length >= 2 && filteredVehicles.length === 0 && (
-            <div className="p-4 text-center text-muted-foreground border rounded-lg border-dashed">
-              <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Aucun véhicule trouvé</p>
-              <p className="text-xs mt-1">Vérifiez l&apos;immatriculation saisie</p>
-            </div>
-          )}
+          {showResults &&
+            searchQuery.length >= 2 &&
+            filteredVehicles.length === 0 && (
+              <div className="p-4 text-center text-muted-foreground border rounded-lg border-dashed">
+                <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Aucun véhicule trouvé</p>
+                <p className="text-xs mt-1">
+                  Vérifiez l&apos;immatriculation saisie
+                </p>
+              </div>
+            )}
 
           <Button
             type="submit"
