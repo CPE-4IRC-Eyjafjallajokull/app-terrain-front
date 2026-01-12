@@ -220,7 +220,9 @@ export function TerrainMap({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Map className="w-5 h-5 text-orange-600" />
-            <CardTitle className="text-lg">Carte & Itinéraire</CardTitle>
+            <CardTitle className="text-lg">
+              {incidentPosition ? "Carte & Itinéraire" : "Position du véhicule"}
+            </CardTitle>
           </div>
           {routeInfo && (
             <div className="flex items-center gap-2">

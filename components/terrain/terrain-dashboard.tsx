@@ -25,6 +25,7 @@ import type {
 import { VehicleStatusQuick } from "./vehicle-status-quick";
 import { IncidentPanel } from "./incident-panel";
 import { TerrainMap } from "./terrain-map";
+import { VehicleHistoryDialog } from "./vehicle-history-dialog";
 import { toast } from "sonner";
 import { signOut } from "next-auth/react";
 import { useSSE } from "@/hooks/useSSE";
@@ -47,8 +48,26 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper function to check if vehicle status is "Disponible" (available)
+  const isVehicleAvailable = useCallback((vehicleToCheck: Vehicle): boolean => {
+    const statusLabel = vehicleToCheck.status?.label?.toLowerCase() || "";
+    return (
+      statusLabel.includes("disponible") &&
+      !statusLabel.includes("indisponible")
+    );
+  }, []);
+
   // Fetch incident data linked to the vehicle's active assignment
   const fetchIncidentData = useCallback(async () => {
+    // Don't fetch incident data if vehicle is available (no active intervention)
+    if (isVehicleAvailable(vehicle)) {
+      setIncident(null);
+      setEngagements(null);
+      setCasualties(null);
+      setIsLoading(false);
+      return;
+    }
+
     if (
       !vehicle.active_assignment?.incident_id &&
       !vehicle.active_assignment?.incident_phase_id
@@ -185,6 +204,16 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             status: newStatus,
           }));
           toast.info(`Statut mis à jour: ${newStatus.label}`);
+
+          // If vehicle becomes available, clear incident data
+          if (
+            newStatus.label.toLowerCase().includes("disponible") &&
+            !newStatus.label.toLowerCase().includes("indisponible")
+          ) {
+            setIncident(null);
+            setEngagements(null);
+            setCasualties(null);
+          }
         } else {
           // If no matching status found, create a temporary one with the label
           setCurrentVehicle((prev) => ({
@@ -195,6 +224,16 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             },
           }));
           toast.info(`Statut mis à jour: ${eventData.status_label}`);
+
+          // If vehicle becomes available, clear incident data
+          if (
+            eventData.status_label?.toLowerCase().includes("disponible") &&
+            !eventData.status_label?.toLowerCase().includes("indisponible")
+          ) {
+            setIncident(null);
+            setEngagements(null);
+            setCasualties(null);
+          }
         }
       }
     }
@@ -307,6 +346,9 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     });
   };
 
+  // Check if vehicle is currently available (not on intervention)
+  const vehicleIsAvailable = isVehicleAvailable(currentVehicle);
+
   // Calculate vehicle and incident positions for map
   const vehiclePosition = currentVehicle.current_position
     ? {
@@ -315,12 +357,14 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
       }
     : null;
 
-  const incidentPosition = incident
-    ? {
-        lat: incident.latitude || 0,
-        lng: incident.longitude || 0,
-      }
-    : null;
+  // Only show incident position if vehicle is NOT available (on intervention)
+  const incidentPosition =
+    !vehicleIsAvailable && incident
+      ? {
+          lat: incident.latitude || 0,
+          lng: incident.longitude || 0,
+        }
+      : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-orange-50">
@@ -471,11 +515,19 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                       </p>
                     </div>
                   </div>
+
+                  {/* History Button */}
+                  <div className="pt-2 border-t">
+                    <VehicleHistoryDialog
+                      vehicleId={currentVehicle.vehicle_id}
+                      vehicleImmatriculation={currentVehicle.immatriculation}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Incident Panel */}
-              {incident ? (
+              {!vehicleIsAvailable && incident ? (
                 <IncidentPanel
                   incident={incident}
                   engagements={engagements}
@@ -485,17 +537,18 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                   onReinforcementSuccess={fetchIncidentData}
                 />
               ) : (
-                <Card className="border-dashed border-muted-foreground/30">
+                <Card className="border-dashed border-green-200 bg-green-50/30">
                   <CardContent className="py-12 text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                      <Flame className="w-8 h-8 text-muted-foreground" />
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-green-600" />
                     </div>
-                    <h3 className="font-semibold mb-1">
-                      Aucun incident assigné
+                    <h3 className="font-semibold mb-1 text-green-700">
+                      Aucun incident en cours
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Ce véhicule n&apos;est actuellement affecté à aucune
-                      intervention
+                      {vehicleIsAvailable
+                        ? "Ce véhicule est disponible et prêt pour une nouvelle intervention"
+                        : "Ce véhicule n'est actuellement affecté à aucune intervention"}
                     </p>
                   </CardContent>
                 </Card>

@@ -299,8 +299,11 @@ export default function Home() {
           </div>
 
           {/* Sign in card */}
-          <div className="bg-card border rounded-xl p-8 shadow-xl shadow-black/5 space-y-6">
+          <div className="bg-card border border-orange-200 rounded-xl p-8 shadow-xl shadow-black/5 space-y-6">
             <div className="text-center space-y-2">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center">
+                <Shield className="w-8 h-8 text-orange-600" />
+              </div>
               <h2 className="text-2xl font-semibold">Connexion requise</h2>
               <p className="text-muted-foreground">
                 Authentifiez-vous pour accéder à l&apos;application terrain
@@ -308,7 +311,10 @@ export default function Home() {
             </div>
 
             <Link href="/auth/signin">
-              <Button className="w-full h-12 text-base gap-2" size="lg">
+              <Button
+                className="w-full h-12 text-base gap-2 bg-orange-600 hover:bg-orange-700"
+                size="lg"
+              >
                 <LogIn className="w-5 h-5" />
                 Se connecter
               </Button>
