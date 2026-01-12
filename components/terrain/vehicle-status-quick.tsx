@@ -49,7 +49,7 @@ const QUICK_STATUSES: QuickStatusButton[] = [
   {
     label: "Disponible",
     icon: CheckCircle,
-    matchLabels: ["disponible", "available"],
+    matchLabels: ["disponible"],
     color: "text-green-700",
     bgColor: "bg-green-50 hover:bg-green-100",
     borderColor: "border-green-200",
@@ -57,7 +57,7 @@ const QUICK_STATUSES: QuickStatusButton[] = [
   {
     label: "En route",
     icon: Navigation,
-    matchLabels: ["en route", "en_route"],
+    matchLabels: ["engagé"],
     color: "text-blue-700",
     bgColor: "bg-blue-50 hover:bg-blue-100",
     borderColor: "border-blue-200",
@@ -65,7 +65,7 @@ const QUICK_STATUSES: QuickStatusButton[] = [
   {
     label: "Sur place",
     icon: MapPin,
-    matchLabels: ["sur place", "sur_place", "on site"],
+    matchLabels: ["sur intervention"],
     color: "text-orange-700",
     bgColor: "bg-orange-50 hover:bg-orange-100",
     borderColor: "border-orange-200",
@@ -73,7 +73,7 @@ const QUICK_STATUSES: QuickStatusButton[] = [
   {
     label: "Retour",
     icon: ArrowLeft,
-    matchLabels: ["retour", "returning"],
+    matchLabels: ["retour"],
     color: "text-purple-700",
     bgColor: "bg-purple-50 hover:bg-purple-100",
     borderColor: "border-purple-200",
@@ -154,11 +154,10 @@ export function VehicleStatusQuick({
                 <Button
                   key={quickStatus.label}
                   variant="outline"
-                  className={`h-20 flex-col gap-2 transition-all relative ${
-                    isCurrent
-                      ? `${quickStatus.color} border-3 ${quickStatus.borderColor} shadow-xl scale-105 bg-gradient-to-br from-white ${quickStatus.bgColor}`
-                      : `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color} hover:scale-105 hover:shadow-lg hover:border-2`
-                  }`}
+                  className={`h-20 flex-col gap-2 transition-all relative ${isCurrent
+                    ? `${quickStatus.color} border-3 ${quickStatus.borderColor} shadow-xl scale-105 bg-gradient-to-br from-white ${quickStatus.bgColor}`
+                    : `${quickStatus.bgColor} ${quickStatus.borderColor} ${quickStatus.color} hover:scale-105 hover:shadow-lg hover:border-2`
+                    }`}
                   disabled={isDisabled || !hasMatch}
                   onClick={() => !isCurrent && handleStatusClick(quickStatus)}
                 >

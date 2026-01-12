@@ -403,22 +403,22 @@ export function VehicleDetail({
                         <>
                           {(positionAddress.address.house_number ||
                             positionAddress.address.road) && (
-                            <p className="text-foreground">
-                              {positionAddress.address.house_number}{" "}
-                              {positionAddress.address.road}
-                            </p>
-                          )}
+                              <p className="text-foreground">
+                                {positionAddress.address.house_number}{" "}
+                                {positionAddress.address.road}
+                              </p>
+                            )}
                           {(positionAddress.address.postcode ||
                             positionAddress.address.city ||
                             positionAddress.address.town ||
                             positionAddress.address.village) && (
-                            <p className="text-muted-foreground">
-                              {positionAddress.address.postcode}{" "}
-                              {positionAddress.address.city ||
-                                positionAddress.address.town ||
-                                positionAddress.address.village}
-                            </p>
-                          )}
+                              <p className="text-muted-foreground">
+                                {positionAddress.address.postcode}{" "}
+                                {positionAddress.address.city ||
+                                  positionAddress.address.town ||
+                                  positionAddress.address.village}
+                              </p>
+                            )}
                         </>
                       ) : null}
                     </div>
@@ -452,13 +452,12 @@ export function VehicleDetail({
                   <div className="flex items-center gap-2">
                     <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${
-                          vehicle.energy_level * 100 > 50
+                        className={`h-full rounded-full ${vehicle.energy_level * 100 > 50
                             ? "bg-green-500"
                             : vehicle.energy_level * 100 > 20
                               ? "bg-yellow-500"
                               : "bg-red-500"
-                        }`}
+                          }`}
                         style={{ width: `${vehicle.energy_level * 100}%` }}
                       />
                     </div>

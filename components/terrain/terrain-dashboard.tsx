@@ -166,13 +166,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     const event = sseData.event;
     const eventData = sseData.data as
       | {
-          vehicle_id?: string;
-          vehicle_immatriculation?: string;
-          latitude?: number;
-          longitude?: number;
-          status_label?: string;
-          timestamp?: string;
-        }
+        vehicle_id?: string;
+        vehicle_immatriculation?: string;
+        latitude?: number;
+        longitude?: number;
+        status_label?: string;
+        timestamp?: string;
+      }
       | undefined;
 
     if (!eventData?.vehicle_id) return;
@@ -203,7 +203,6 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             ...prev,
             status: newStatus,
           }));
-          toast.info(`Statut mis à jour: ${newStatus.label}`);
 
           // If vehicle becomes available, clear incident data
           if (
@@ -223,7 +222,6 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
               label: eventData.status_label || "Inconnu",
             },
           }));
-          toast.info(`Statut mis à jour: ${eventData.status_label}`);
 
           // If vehicle becomes available, clear incident data
           if (
@@ -352,18 +350,18 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   // Calculate vehicle and incident positions for map
   const vehiclePosition = currentVehicle.current_position
     ? {
-        lat: currentVehicle.current_position.latitude || 0,
-        lng: currentVehicle.current_position.longitude || 0,
-      }
+      lat: currentVehicle.current_position.latitude || 0,
+      lng: currentVehicle.current_position.longitude || 0,
+    }
     : null;
 
   // Only show incident position if vehicle is NOT available (on intervention)
   const incidentPosition =
     !vehicleIsAvailable && incident
       ? {
-          lat: incident.latitude || 0,
-          lng: incident.longitude || 0,
-        }
+        lat: incident.latitude || 0,
+        lng: incident.longitude || 0,
+      }
       : null;
 
   return (
@@ -509,8 +507,8 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
                       <p className="font-medium">
                         {currentVehicle.current_position?.timestamp
                           ? formatDate(
-                              currentVehicle.current_position.timestamp,
-                            )
+                            currentVehicle.current_position.timestamp,
+                          )
                           : "—"}
                       </p>
                     </div>
