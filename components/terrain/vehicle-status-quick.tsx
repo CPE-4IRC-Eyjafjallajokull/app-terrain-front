@@ -167,12 +167,14 @@ export function VehicleStatusQuick({
                       <CheckCircle className="w-4 h-4" />
                     </div>
                   )}
-                  <Icon className={`w-7 h-7 ${isCurrent ? '' : ''}`} />
+                  <Icon className={`w-7 h-7 ${isCurrent ? "" : ""}`} />
                   <span className="text-sm font-semibold">
                     {quickStatus.label}
                   </span>
                   {isCurrent && (
-                    <span className="text-[10px] font-medium opacity-70">Statut actuel</span>
+                    <span className="text-[10px] font-medium opacity-70">
+                      Statut actuel
+                    </span>
                   )}
                 </Button>
               );

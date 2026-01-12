@@ -54,8 +54,12 @@ export function IncidentPanel({
   onReinforcementSuccess,
 }: IncidentPanelProps) {
   const [isReinforcementOpen, setIsReinforcementOpen] = useState(false);
-  const [casualtyTypes, setCasualtyTypes] = useState<{ casualty_type_id: string; label: string | null; code: string | null }[]>([]);
-  const [casualtyStatuses, setCasualtyStatuses] = useState<{ casualty_status_id: string; label: string }[]>([]);
+  const [casualtyTypes, setCasualtyTypes] = useState<
+    { casualty_type_id: string; label: string | null; code: string | null }[]
+  >([]);
+  const [casualtyStatuses, setCasualtyStatuses] = useState<
+    { casualty_status_id: string; label: string }[]
+  >([]);
   const [isLoadingCasualtyData, setIsLoadingCasualtyData] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,7 +81,8 @@ export function IncidentPanel({
   // Get vehicle count from engagements
   const vehicleCount = engagements?.vehicle_assignments?.length || 0;
   const activeVehicleCount =
-    engagements?.vehicle_assignments?.filter((a) => !a.unassigned_at).length || 0;
+    engagements?.vehicle_assignments?.filter((a) => !a.unassigned_at).length ||
+    0;
 
   // Get casualty count
   const casualtyCount = casualties?.stats?.total || 0;
@@ -132,7 +137,10 @@ export function IncidentPanel({
   };
 
   // Handle edit casualty
-  const handleEditCasualty = async (casualtyId: string, data: CasualtyUpdate) => {
+  const handleEditCasualty = async (
+    casualtyId: string,
+    data: CasualtyUpdate,
+  ) => {
     setIsSubmitting(true);
     try {
       const response = await fetch(`/api/casualties/${casualtyId}`, {
@@ -213,7 +221,9 @@ export function IncidentPanel({
             <div className="flex items-start gap-2">
               <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium">{incident.address || "Adresse non renseignée"}</p>
+                <p className="font-medium">
+                  {incident.address || "Adresse non renseignée"}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {incident.zipcode} {incident.city}
                 </p>
@@ -227,7 +237,9 @@ export function IncidentPanel({
           {incident.description && (
             <>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Description</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Description
+                </p>
                 <p className="text-sm">{incident.description}</p>
               </div>
               <Separator />
@@ -248,7 +260,9 @@ export function IncidentPanel({
             <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-lg">
               <Users className="w-5 h-5 text-orange-600" />
               <div>
-                <p className="text-sm font-medium text-orange-900">{casualtyCount}</p>
+                <p className="text-sm font-medium text-orange-900">
+                  {casualtyCount}
+                </p>
                 <p className="text-xs text-orange-700">Victimes</p>
               </div>
             </div>

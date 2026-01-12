@@ -145,16 +145,18 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     if (!sseData) return;
 
     const event = sseData.event;
-    const eventData = sseData.data as {
-      vehicle_id?: string;
-      latitude?: number;
-      longitude?: number;
-      vehicle_status_id?: string;
-      status_label?: string;
-    } | undefined;
+    const eventData = sseData.data as
+      | {
+          vehicle_id?: string;
+          latitude?: number;
+          longitude?: number;
+          vehicle_status_id?: string;
+          status_label?: string;
+        }
+      | undefined;
 
     if (!eventData?.vehicle_id) return;
-    
+
     // Only process events for the current vehicle
     if (eventData.vehicle_id !== currentVehicle.vehicle_id) return;
 
@@ -164,7 +166,8 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         ...prev,
         current_position: {
           latitude: eventData.latitude ?? prev.current_position?.latitude ?? 0,
-          longitude: eventData.longitude ?? prev.current_position?.longitude ?? 0,
+          longitude:
+            eventData.longitude ?? prev.current_position?.longitude ?? 0,
           timestamp: new Date().toISOString(),
         },
       }));
@@ -172,7 +175,7 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
       // Update vehicle status in real-time
       if (eventData.vehicle_status_id) {
         const newStatus = vehicleStatuses.find(
-          (s) => s.vehicle_status_id === eventData.vehicle_status_id
+          (s) => s.vehicle_status_id === eventData.vehicle_status_id,
         );
         if (newStatus) {
           setCurrentVehicle((prev) => ({
@@ -340,7 +343,11 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
             {/* SSE Connection indicator */}
             <div
               className={`w-2 h-2 rounded-full ${sseConnected ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
-              title={sseConnected ? "Connecté au serveur temps réel" : "Déconnecté du serveur temps réel"}
+              title={
+                sseConnected
+                  ? "Connecté au serveur temps réel"
+                  : "Déconnecté du serveur temps réel"
+              }
             />
             {getStatusBadge(currentVehicle.status)}
             <Button
