@@ -347,13 +347,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         // Handle "retour" status - vehicle returning to base
         if (isRetourStatus && !isReturningToBase.current) {
           isReturningToBase.current = true;
-          if (!shouldPreserveIncident) {
-            // Clear incident data - intervention is finished
-            setIncident(null);
-            setEngagements(null);
-            setCasualties(null);
-            lastFetchedIncidentId.current = null;
-          }
+          setPinnedIncidentId(null);
+          pinnedIncidentIdRef.current = null;
+          // Clear incident data - intervention is finished
+          setIncident(null);
+          setEngagements(null);
+          setCasualties(null);
+          lastFetchedIncidentId.current = null;
           toast.info("Retour vers la caserne");
         }
 
@@ -531,15 +531,17 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     });
   };
 
-  const isIncidentPinned =
-    !!incident?.incident_id && pinnedIncidentId === incident.incident_id;
-
   // Check if vehicle is currently available (not on intervention)
   const vehicleIsAvailable = isVehicleAvailable(currentVehicle);
 
   // Check if vehicle is in "retour" status
   const vehicleIsReturning =
     currentVehicle.status?.label?.toLowerCase().includes("retour") || false;
+
+  const isIncidentPinned =
+    !!incident?.incident_id &&
+    pinnedIncidentId === incident.incident_id &&
+    !vehicleIsReturning;
 
   // Check if vehicle is "engagé" (en route to incident)
   const vehicleIsEnRoute = (() => {
@@ -558,6 +560,16 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
       statusLabel.includes("intervention") || statusLabel.includes("sur place")
     );
   })();
+
+  useEffect(() => {
+    if (!vehicleIsReturning) return;
+    setPinnedIncidentId(null);
+    pinnedIncidentIdRef.current = null;
+    setIncident(null);
+    setEngagements(null);
+    setCasualties(null);
+    lastFetchedIncidentId.current = null;
+  }, [vehicleIsReturning]);
 
   // Calculate vehicle and incident positions for map
   const vehiclePosition = currentVehicle.current_position
@@ -778,7 +790,9 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
               </Card>
 
               {/* Incident Panel */}
-              {incident && (!vehicleIsAvailable || isIncidentPinned) ? (
+              {incident &&
+              !vehicleIsReturning &&
+              (!vehicleIsAvailable || isIncidentPinned) ? (
                 <IncidentPanel
                   incident={incident}
                   engagements={engagements}

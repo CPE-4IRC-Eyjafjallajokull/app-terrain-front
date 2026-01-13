@@ -184,7 +184,7 @@ export function IncidentPanel({
       const reinforcementResponses = await Promise.all(
         phasesForReinforcements.map((phase) =>
           fetch(
-            `/api/incidents/reinforcements?incident_phase_id=${phase.incident_phase_id}`,
+            `/api/incidents/${incident.incident_id}/${phase.incident_phase_id}/reinforcements`,
           ),
         ),
       );
