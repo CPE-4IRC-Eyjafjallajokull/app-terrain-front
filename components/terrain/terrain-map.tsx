@@ -110,15 +110,16 @@ export function TerrainMap({
 
       if (data) {
         // Extract distance and duration from response
-        const distanceKm = data.distance_km
-          ? data.distance_km.toFixed(1)
-          : data.distance
-            ? (data.distance / 1000).toFixed(1)
+        // API returns distance_m (meters) and duration_s (seconds)
+        const distanceKm = data.distance_m
+          ? (data.distance_m / 1000).toFixed(1)
+          : data.distance_km
+            ? data.distance_km.toFixed(1)
             : "?";
-        const durationMin = data.duration_min
-          ? Math.round(data.duration_min)
-          : data.duration
-            ? Math.round(data.duration / 60)
+        const durationMin = data.duration_s
+          ? Math.round(data.duration_s / 60)
+          : data.duration_min
+            ? Math.round(data.duration_min)
             : "?";
 
         setRouteInfo({

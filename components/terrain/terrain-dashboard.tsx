@@ -40,6 +40,7 @@ type TerrainDashboardProps = {
 
 export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   const [incident, setIncident] = useState<Incident | null>(null);
+  const [pinnedIncidentId, setPinnedIncidentId] = useState<string | null>(null);
   const [engagements, setEngagements] = useState<IncidentEngagements | null>(
     null,
   );
@@ -54,6 +55,8 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   // Track the current destination to prevent duplicate route fetches
   const lastFetchedIncidentId = useRef<string | null>(null);
   const isReturningToBase = useRef<boolean>(false);
+  const pinnedIncidentIdRef = useRef<string | null>(null);
+  const incidentIdRef = useRef<string | null>(null);
 
   // Helper function to check if vehicle status is "Disponible" (available)
   const isVehicleAvailable = useCallback((vehicleToCheck: Vehicle): boolean => {
@@ -89,7 +92,9 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   // Fetch incident data linked to the vehicle's active assignment
   const fetchIncidentData = useCallback(async () => {
     // Don't fetch incident data if vehicle is available (no active intervention)
-    if (isVehicleAvailable(vehicle)) {
+    const shouldPreserveIncident = Boolean(pinnedIncidentId);
+
+    if (isVehicleAvailable(vehicle) && !shouldPreserveIncident) {
       setIncident(null);
       setEngagements(null);
       setCasualties(null);
@@ -99,7 +104,8 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
     if (
       !vehicle.active_assignment?.incident_id &&
-      !vehicle.active_assignment?.incident_phase_id
+      !vehicle.active_assignment?.incident_phase_id &&
+      !shouldPreserveIncident
     ) {
       setIsLoading(false);
       return;
@@ -107,10 +113,14 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
     try {
       // Get incident ID from assignment
-      let incidentId = vehicle.active_assignment.incident_id;
+      let incidentId = vehicle.active_assignment?.incident_id || null;
+
+      if (!incidentId && shouldPreserveIncident) {
+        incidentId = pinnedIncidentId;
+      }
 
       // If we only have phase_id, we need to get the incident from the phase
-      if (!incidentId && vehicle.active_assignment.incident_phase_id) {
+      if (!incidentId && vehicle.active_assignment?.incident_phase_id) {
         // Try to fetch the incident through engagements or another API
         // For now, we'll need to fetch all incidents and find the one with this phase
         const incidentsRes = await fetch("/api/incidents");
@@ -161,12 +171,20 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [vehicle, isVehicleAvailable]);
+  }, [vehicle, isVehicleAvailable, pinnedIncidentId]);
 
   useEffect(() => {
     fetchVehicleMetadata();
     fetchIncidentData();
   }, [fetchVehicleMetadata, fetchIncidentData]);
+
+  useEffect(() => {
+    pinnedIncidentIdRef.current = pinnedIncidentId;
+  }, [pinnedIncidentId]);
+
+  useEffect(() => {
+    incidentIdRef.current = incident?.incident_id || null;
+  }, [incident?.incident_id]);
 
   // Fetch incident by ID (for SSE assignment events)
   const fetchIncidentById = useCallback(async (incidentId: string) => {
@@ -214,6 +232,10 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
     const event = sseData.event;
 
+    const shouldPreserveIncident =
+      pinnedIncidentIdRef.current != null &&
+      pinnedIncidentIdRef.current === incidentIdRef.current;
+
     // Handle vehicle_assignment event
     if (event === "vehicle_assignment") {
       const assignmentData = sseData.data as
@@ -240,6 +262,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
       // If there's an incident_id and no unassigned_at, fetch the incident
       if (assignmentData.incident_id && !assignmentData.unassigned_at) {
+        if (
+          pinnedIncidentIdRef.current &&
+          assignmentData.incident_id !== pinnedIncidentIdRef.current
+        ) {
+          setPinnedIncidentId(null);
+          pinnedIncidentIdRef.current = null;
+        }
         fetchIncidentById(assignmentData.incident_id);
 
         // Update the vehicle's active assignment
@@ -254,11 +283,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
           },
         }));
       } else if (assignmentData.unassigned_at) {
-        // Vehicle was unassigned, clear incident data
-        setIncident(null);
-        setEngagements(null);
-        setCasualties(null);
-        lastFetchedIncidentId.current = null;
+        // Vehicle was unassigned, clear incident data if not pinned
+        if (!shouldPreserveIncident) {
+          setIncident(null);
+          setEngagements(null);
+          setCasualties(null);
+          lastFetchedIncidentId.current = null;
+        }
 
         setCurrentVehicle((prev) => ({
           ...prev,
@@ -316,11 +347,13 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         // Handle "retour" status - vehicle returning to base
         if (isRetourStatus && !isReturningToBase.current) {
           isReturningToBase.current = true;
-          // Clear incident data - intervention is finished
-          setIncident(null);
-          setEngagements(null);
-          setCasualties(null);
-          lastFetchedIncidentId.current = null;
+          if (!shouldPreserveIncident) {
+            // Clear incident data - intervention is finished
+            setIncident(null);
+            setEngagements(null);
+            setCasualties(null);
+            lastFetchedIncidentId.current = null;
+          }
           toast.info("Retour vers la caserne");
         }
 
@@ -335,10 +368,12 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
         // Handle "disponible" status - vehicle available at base
         if (isDisponibleStatus) {
-          setIncident(null);
-          setEngagements(null);
-          setCasualties(null);
-          lastFetchedIncidentId.current = null;
+          if (!shouldPreserveIncident) {
+            setIncident(null);
+            setEngagements(null);
+            setCasualties(null);
+            lastFetchedIncidentId.current = null;
+          }
           isReturningToBase.current = false;
           // Clear active assignment when vehicle becomes available
           setCurrentVehicle((prev) => ({
@@ -428,6 +463,14 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     }
   };
 
+  const handleReinforcementSuccess = useCallback(() => {
+    if (incident?.incident_id) {
+      setPinnedIncidentId(incident.incident_id);
+      pinnedIncidentIdRef.current = incident.incident_id;
+    }
+    fetchIncidentData();
+  }, [incident?.incident_id, fetchIncidentData]);
+
   const getStatusBadge = (status: VehicleStatus | null) => {
     const label = status?.label?.toLowerCase() || "";
 
@@ -487,6 +530,9 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
       minute: "2-digit",
     });
   };
+
+  const isIncidentPinned =
+    !!incident?.incident_id && pinnedIncidentId === incident.incident_id;
 
   // Check if vehicle is currently available (not on intervention)
   const vehicleIsAvailable = isVehicleAvailable(currentVehicle);
@@ -732,14 +778,15 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
               </Card>
 
               {/* Incident Panel */}
-              {!vehicleIsAvailable && incident ? (
+              {incident && (!vehicleIsAvailable || isIncidentPinned) ? (
                 <IncidentPanel
                   incident={incident}
                   engagements={engagements}
                   casualties={casualties}
                   vehicleTypes={vehicleTypes}
+                  currentVehicleId={currentVehicle.vehicle_id}
                   onCasualtyUpdate={handleCasualtyUpdate}
-                  onReinforcementSuccess={fetchIncidentData}
+                  onReinforcementSuccess={handleReinforcementSuccess}
                 />
               ) : (
                 <Card className="border-dashed border-green-200 bg-green-50/30">
