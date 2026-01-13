@@ -6,7 +6,5 @@ import { proxyApiRequest } from "@/lib/api-proxy";
  * Proxy vers /qg/assignment-proposals/request pour demander une proposition d'affectation
  */
 export async function POST(request: NextRequest) {
-  return proxyApiRequest(request, "qg/assignment-proposals/request", {
-    method: "POST",
-  });
+  return proxyApiRequest(request, "qg/assignment-proposals/request");
 }

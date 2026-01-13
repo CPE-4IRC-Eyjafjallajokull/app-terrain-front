@@ -54,6 +54,7 @@ export function useSSE(url: string) {
       "incident_closed",
       "vehicle_position_update",
       "vehicle_status_update",
+      "vehicle_assignment",
     ];
     namedEvents.forEach((evt) =>
       eventSource.addEventListener(evt, handleEvent as EventListener),

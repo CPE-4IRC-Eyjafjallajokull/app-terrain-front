@@ -300,31 +300,49 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
           (s) => s.label.toLowerCase() === statusLabel,
         );
 
-        // Check if this is a "retour" status
+        // Check status type
         const isRetourStatus = statusLabel.includes("retour");
+        const isEngageStatus =
+          statusLabel.includes("engagé") || statusLabel.includes("engage");
+        const isDisponibleStatus =
+          statusLabel.includes("disponible") &&
+          !statusLabel.includes("indisponible");
+
+        // Handle "retour" status - vehicle returning to base
         if (isRetourStatus && !isReturningToBase.current) {
           isReturningToBase.current = true;
-          // Clear incident but keep base destination for route calculation
+          // Clear incident data - intervention is finished
+          setIncident(null);
+          setEngagements(null);
+          setCasualties(null);
           lastFetchedIncidentId.current = null;
+          toast.info("Retour vers la caserne");
         }
 
+        // Handle "engagé" status - vehicle assigned and en route
+        if (isEngageStatus && !isReturningToBase.current) {
+          // If we have an active assignment but no incident loaded, fetch it
+          const incidentId = currentVehicle.active_assignment?.incident_id;
+          if (incidentId && lastFetchedIncidentId.current !== incidentId) {
+            fetchIncidentById(incidentId);
+          }
+        }
+
+        // Handle "disponible" status - vehicle available at base
+        if (isDisponibleStatus) {
+          setIncident(null);
+          setEngagements(null);
+          setCasualties(null);
+          lastFetchedIncidentId.current = null;
+          isReturningToBase.current = false;
+        }
+
+        // Update the vehicle status
         if (newStatus) {
           setCurrentVehicle((prev) => ({
             ...prev,
             status: newStatus,
           }));
-
-          // If vehicle becomes available, clear incident data
-          if (
-            newStatus.label.toLowerCase().includes("disponible") &&
-            !newStatus.label.toLowerCase().includes("indisponible")
-          ) {
-            setIncident(null);
-            setEngagements(null);
-            setCasualties(null);
-            lastFetchedIncidentId.current = null;
-            isReturningToBase.current = false;
-          }
         } else {
           // If no matching status found, create a temporary one with the label
           setCurrentVehicle((prev) => ({
@@ -334,18 +352,6 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
               label: eventData.status_label || "Inconnu",
             },
           }));
-
-          // If vehicle becomes available, clear incident data
-          if (
-            eventData.status_label?.toLowerCase().includes("disponible") &&
-            !eventData.status_label?.toLowerCase().includes("indisponible")
-          ) {
-            setIncident(null);
-            setEngagements(null);
-            setCasualties(null);
-            lastFetchedIncidentId.current = null;
-            isReturningToBase.current = false;
-          }
         }
       }
     }
