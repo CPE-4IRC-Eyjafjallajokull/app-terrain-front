@@ -33,7 +33,6 @@ type VehicleRequest = {
 type ReinforcementDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  incidentId: string;
   phases: IncidentPhase[];
   vehicleTypes: VehicleType[];
   onSuccess?: () => void;
@@ -42,7 +41,6 @@ type ReinforcementDialogProps = {
 export function ReinforcementDialog({
   open,
   onOpenChange,
-  incidentId,
   phases,
   vehicleTypes,
   onSuccess,
@@ -111,7 +109,7 @@ export function ReinforcementDialog({
       }));
 
       // Send the assignment request to the QG API
-      await requestAssignmentForPhase(incidentId, selectedPhaseId, vehicles);
+      await requestAssignmentForPhase(selectedPhaseId, vehicles);
 
       toast.success("Demande de renfort envoyée avec succès");
       handleReset();

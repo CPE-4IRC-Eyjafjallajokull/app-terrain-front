@@ -343,7 +343,6 @@ export function IncidentPanel({
       <ReinforcementDialog
         open={isReinforcementOpen}
         onOpenChange={setIsReinforcementOpen}
-        incidentId={incident.incident_id}
         phases={activePhases}
         vehicleTypes={vehicleTypes}
         onSuccess={() => {

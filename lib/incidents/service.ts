@@ -181,12 +181,11 @@ export async function createReinforcementVehicleRequest(
  * This sends the request to the SDMIS engine via /qg/incidents/{incident_id}/{phase_id}/request-assignment
  */
 export async function requestAssignmentForPhase(
-  incidentId: string,
   phaseId: string,
   vehicles: AssignmentProposalVehicleRequest[],
 ): Promise<void> {
   const response = await fetchWithAuth(
-    `/api/incidents/${incidentId}/${phaseId}/request-assignment`,
+    `/api/incidents/assignment-proposals/request`,
     {
       method: "POST",
       credentials: "include",
