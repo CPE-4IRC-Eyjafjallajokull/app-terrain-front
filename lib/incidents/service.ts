@@ -15,6 +15,7 @@ import type {
   ReinforcementVehicleRequest,
   ReinforcementVehicleRequestCreate,
   VehicleType,
+  AssignmentProposalVehicleRequest,
 } from "./types";
 
 /**
@@ -173,6 +174,38 @@ export async function createReinforcementVehicleRequest(
   }
 
   return parsedBody.json as ReinforcementVehicleRequest;
+}
+
+/**
+ * Requests assignment proposal for a specific incident phase
+ * This sends the request to the SDMIS engine via /qg/incidents/{incident_id}/{phase_id}/request-assignment
+ */
+export async function requestAssignmentForPhase(
+  incidentId: string,
+  phaseId: string,
+  vehicles: AssignmentProposalVehicleRequest[],
+): Promise<void> {
+  const response = await fetchWithAuth(
+    `/api/incidents/${incidentId}/${phaseId}/request-assignment`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        incident_phase_id: phaseId,
+        vehicles,
+      }),
+    },
+  );
+
+  const parsedBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    const message = getErrorMessage(response, parsedBody);
+    throw new Error(message);
+  }
 }
 
 /**

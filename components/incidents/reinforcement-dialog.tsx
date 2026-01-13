@@ -21,10 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { IncidentPhase, VehicleType } from "@/lib/incidents/types";
-import {
-  createReinforcement,
-  createReinforcementVehicleRequest,
-} from "@/lib/incidents/service";
+import { requestAssignmentForPhase } from "@/lib/incidents/service";
 import { toast } from "sonner";
 import { Plus, Trash2, Shield, Loader2 } from "lucide-react";
 
@@ -36,6 +33,7 @@ type VehicleRequest = {
 type ReinforcementDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  incidentId: string;
   phases: IncidentPhase[];
   vehicleTypes: VehicleType[];
   onSuccess?: () => void;
@@ -44,6 +42,7 @@ type ReinforcementDialogProps = {
 export function ReinforcementDialog({
   open,
   onOpenChange,
+  incidentId,
   phases,
   vehicleTypes,
   onSuccess,
@@ -105,20 +104,14 @@ export function ReinforcementDialog({
     setIsSubmitting(true);
 
     try {
-      // Create the reinforcement
-      const reinforcement = await createReinforcement({
-        incident_phase_id: selectedPhaseId,
-        notes: notes || null,
-      });
+      // Prepare the vehicles array for the API
+      const vehicles = validRequests.map((request) => ({
+        vehicle_type_id: request.vehicleTypeId,
+        qty: request.quantity,
+      }));
 
-      // Create vehicle requests for the reinforcement
-      for (const request of validRequests) {
-        await createReinforcementVehicleRequest({
-          reinforcement_id: reinforcement.reinforcement_id,
-          vehicle_type_id: request.vehicleTypeId,
-          quantity: request.quantity,
-        });
-      }
+      // Send the assignment request to the QG API
+      await requestAssignmentForPhase(incidentId, selectedPhaseId, vehicles);
 
       toast.success("Demande de renfort envoyée avec succès");
       handleReset();

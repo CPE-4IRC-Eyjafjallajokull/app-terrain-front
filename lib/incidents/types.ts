@@ -290,6 +290,18 @@ export type ReinforcementVehicleRequestCreate = {
   assigned_quantity?: number;
 };
 
+// ============ Assignment Proposal Request ============
+
+export type AssignmentProposalVehicleRequest = {
+  vehicle_type_id: string;
+  qty: number;
+};
+
+export type AssignmentProposalRequest = {
+  incident_phase_id: string;
+  vehicles: AssignmentProposalVehicleRequest[];
+};
+
 // Filter type for incidents list
 export type IncidentFilters = {
   search: string;
