@@ -70,10 +70,8 @@ export function IncidentPanel({
   const [reinforcementRequests, setReinforcementRequests] = useState<
     Record<string, ReinforcementVehicleRequest[]>
   >({});
-  const [areReinforcementsLoaded, setAreReinforcementsLoaded] =
-    useState(false);
-  const [isLoadingReinforcements, setIsLoadingReinforcements] =
-    useState(false);
+  const [areReinforcementsLoaded, setAreReinforcementsLoaded] = useState(false);
+  const [isLoadingReinforcements, setIsLoadingReinforcements] = useState(false);
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -107,7 +105,9 @@ export function IncidentPanel({
 
   const fleetVehicles = useMemo(() => {
     const assignments = incident.phases.flatMap((phase) =>
-      phase.vehicle_assignments.filter((assignment) => !assignment.unassigned_at),
+      phase.vehicle_assignments.filter(
+        (assignment) => !assignment.unassigned_at,
+      ),
     );
 
     const uniqueAssignments = new Map<string, (typeof assignments)[number]>();
