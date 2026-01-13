@@ -77,6 +77,8 @@ export function TerrainMap({
   const hasCalculatedRoute = useRef(false);
   // Track the destination to detect changes and recalculate route
   const lastDestination = useRef<string | null>(null);
+  // Track if user has manually interacted with the map
+  const [isFollowingVehicle, setIsFollowingVehicle] = useState(true);
 
   // Calculate route using internal geo/route API
   const calculateRoute = useCallback(async () => {
@@ -153,7 +155,16 @@ export function TerrainMap({
   // Auto-calculate route when positions are available and map is loaded
   // Recalculate when destination changes
   useEffect(() => {
-    if (!vehiclePosition || !destinationPosition || !isMapLoaded) return;
+    // Clear route when destination is removed
+    if (!destinationPosition) {
+      setRouteGeometry(null);
+      setRouteInfo(null);
+      hasCalculatedRoute.current = false;
+      lastDestination.current = null;
+      return;
+    }
+
+    if (!vehiclePosition || !isMapLoaded) return;
 
     // Create a destination key to detect changes
     const destinationKey = `${destinationPosition.lat},${destinationPosition.lng}`;
@@ -169,37 +180,27 @@ export function TerrainMap({
     }
   }, [vehiclePosition, destinationPosition, isMapLoaded, calculateRoute]);
 
-  // Fit bounds to show both markers
+  // Follow vehicle position when moving (instead of fitting bounds)
   useEffect(() => {
-    if (!mapRef.current || !isMapLoaded) return;
+    if (!mapRef.current || !isMapLoaded || !vehiclePosition) return;
+    if (!isFollowingVehicle) return;
 
     const map = mapRef.current.getMap();
 
-    if (vehiclePosition && destinationPosition) {
-      // Fit to both positions
-      const bounds = new maplibregl.LngLatBounds(
-        [vehiclePosition.lng, vehiclePosition.lat],
-        [destinationPosition.lng, destinationPosition.lat],
-      );
-      map.fitBounds(bounds, {
-        padding: { top: 60, bottom: 60, left: 40, right: 40 },
-        maxZoom: 15,
-        duration: 800,
-      });
-    } else if (vehiclePosition) {
-      map.easeTo({
-        center: [vehiclePosition.lng, vehiclePosition.lat],
-        zoom: 14,
-        duration: 800,
-      });
-    } else if (destinationPosition) {
-      map.easeTo({
-        center: [destinationPosition.lng, destinationPosition.lat],
-        zoom: 14,
-        duration: 800,
-      });
+    // Always center on vehicle with a good zoom level for driving
+    map.easeTo({
+      center: [vehiclePosition.lng, vehiclePosition.lat],
+      zoom: 15,
+      duration: 500,
+    });
+  }, [vehiclePosition, isMapLoaded, isFollowingVehicle]);
+
+  // Reset follow mode when destination changes
+  useEffect(() => {
+    if (destinationPosition) {
+      setIsFollowingVehicle(true);
     }
-  }, [vehiclePosition, destinationPosition, isMapLoaded]);
+  }, [destinationPosition]);
 
   // Open in Google Maps with directions
   const openNavigation = () => {
@@ -208,14 +209,20 @@ export function TerrainMap({
     window.open(url, "_blank");
   };
 
-  // Center on vehicle
+  // Center on vehicle and re-enable follow mode
   const centerOnVehicle = () => {
     if (!mapRef.current || !vehiclePosition) return;
+    setIsFollowingVehicle(true);
     mapRef.current.getMap().easeTo({
       center: [vehiclePosition.lng, vehiclePosition.lat],
       zoom: 15,
       duration: 500,
     });
+  };
+
+  // Disable follow mode when user manually interacts with map
+  const handleMapDragStart = () => {
+    setIsFollowingVehicle(false);
   };
 
   const hasPositions = vehiclePosition || destinationPosition;
@@ -287,6 +294,7 @@ export function TerrainMap({
                 touchPitch={false}
                 attributionControl={false}
                 onLoad={() => setIsMapLoaded(true)}
+                onDragStart={handleMapDragStart}
                 style={{ width: "100%", height: "100%" }}
               >
                 {/* Route line */}

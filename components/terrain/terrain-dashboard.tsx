@@ -64,6 +64,28 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     );
   }, []);
 
+  // Fetch vehicle statuses and types (needed for dialogs even when vehicle is available)
+  const fetchVehicleMetadata = useCallback(async () => {
+    try {
+      const [statusesRes, typesRes] = await Promise.all([
+        fetch("/api/vehicles/statuses"),
+        fetch("/api/vehicles/types"),
+      ]);
+
+      if (statusesRes.ok) {
+        const statusesData = await statusesRes.json();
+        setVehicleStatuses(statusesData);
+      }
+
+      if (typesRes.ok) {
+        const typesData = await typesRes.json();
+        setVehicleTypes(typesData);
+      }
+    } catch (err) {
+      console.error("Error fetching vehicle metadata:", err);
+    }
+  }, []);
+
   // Fetch incident data linked to the vehicle's active assignment
   const fetchIncidentData = useCallback(async () => {
     // Don't fetch incident data if vehicle is available (no active intervention)
@@ -113,18 +135,10 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
       }
 
       // Fetch incident details, engagements, and casualties in parallel
-      const [
-        incidentRes,
-        engagementsRes,
-        casualtiesRes,
-        statusesRes,
-        typesRes,
-      ] = await Promise.all([
+      const [incidentRes, engagementsRes, casualtiesRes] = await Promise.all([
         fetch(`/api/incidents/${incidentId}`),
         fetch(`/api/incidents/${incidentId}/engagements`),
         fetch(`/api/incidents/${incidentId}/casualties`),
-        fetch("/api/vehicles/statuses"),
-        fetch("/api/vehicles/types"),
       ]);
 
       if (incidentRes.ok) {
@@ -141,27 +155,18 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
         const casualtiesData = await casualtiesRes.json();
         setCasualties(casualtiesData);
       }
-
-      if (statusesRes.ok) {
-        const statusesData = await statusesRes.json();
-        setVehicleStatuses(statusesData);
-      }
-
-      if (typesRes.ok) {
-        const typesData = await typesRes.json();
-        setVehicleTypes(typesData);
-      }
     } catch (err) {
       console.error("Error fetching incident data:", err);
       setError("Erreur lors du chargement des données");
     } finally {
       setIsLoading(false);
     }
-  }, [vehicle]);
+  }, [vehicle, isVehicleAvailable]);
 
   useEffect(() => {
+    fetchVehicleMetadata();
     fetchIncidentData();
-  }, [fetchIncidentData]);
+  }, [fetchVehicleMetadata, fetchIncidentData]);
 
   // Fetch incident by ID (for SSE assignment events)
   const fetchIncidentById = useCallback(async (incidentId: string) => {
@@ -335,6 +340,11 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
           setCasualties(null);
           lastFetchedIncidentId.current = null;
           isReturningToBase.current = false;
+          // Clear active assignment when vehicle becomes available
+          setCurrentVehicle((prev) => ({
+            ...prev,
+            active_assignment: null,
+          }));
         }
 
         // Update the vehicle status
@@ -485,6 +495,24 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
   const vehicleIsReturning =
     currentVehicle.status?.label?.toLowerCase().includes("retour") || false;
 
+  // Check if vehicle is "engagé" (en route to incident)
+  const vehicleIsEnRoute = (() => {
+    const statusLabel = currentVehicle.status?.label?.toLowerCase() || "";
+    return (
+      statusLabel.includes("engagé") ||
+      statusLabel.includes("engage") ||
+      statusLabel.includes("en route")
+    );
+  })();
+
+  // Check if vehicle is on site (intervention / sur place)
+  const vehicleIsOnSite = (() => {
+    const statusLabel = currentVehicle.status?.label?.toLowerCase() || "";
+    return (
+      statusLabel.includes("intervention") || statusLabel.includes("sur place")
+    );
+  })();
+
   // Calculate vehicle and incident positions for map
   const vehiclePosition = currentVehicle.current_position
     ? {
@@ -495,10 +523,16 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
 
   // Calculate destination position based on status
   // - If returning to base: use base_interest_point position
-  // - If on intervention: use incident position
+  // - If engagé/en route to incident: use incident position
+  // - If on site (intervention/sur place): no route needed (already there)
   // - If available: no destination
   const destinationPosition = (() => {
     if (vehicleIsAvailable) {
+      return null;
+    }
+
+    // On site = no route needed
+    if (vehicleIsOnSite) {
       return null;
     }
 
@@ -510,13 +544,16 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
       };
     }
 
-    if (incident) {
-      // Going to incident
+    // Only show route to incident if vehicle is en route (engagé)
+    if (vehicleIsEnRoute && incident) {
       return {
         lat: incident.latitude || 0,
         lng: incident.longitude || 0,
       };
     }
+
+    return null;
+  })();
 
     return null;
   })();

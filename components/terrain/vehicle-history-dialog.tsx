@@ -16,19 +16,42 @@ import {
   History,
   Calendar,
   Clock,
-  MapPin,
   CheckCircle,
   AlertCircle,
+  Truck,
+  Shield,
 } from "lucide-react";
+
+type VehicleType = {
+  vehicle_type_id: string;
+  code: string;
+  label: string;
+};
+
+type PhaseType = {
+  phase_type_id: string;
+  code: string;
+  label: string;
+};
+
+type VehicleInfo = {
+  vehicle_id: string;
+  immatriculation: string;
+  vehicle_type: VehicleType;
+};
 
 type VehicleAssignment = {
   vehicle_assignment_id: string;
   vehicle_id: string;
   incident_phase_id: string;
   assigned_at: string;
-  unassigned_at: string | null;
   assigned_by_operator_id: string | null;
-  unassigned_by_operator_id: string | null;
+  validated_at: string | null;
+  validated_by_operator_id: string | null;
+  unassigned_at: string | null;
+  notes: string | null;
+  vehicle: VehicleInfo;
+  phase_type: PhaseType;
 };
 
 type VehicleHistoryDialogProps = {
@@ -55,12 +78,22 @@ export function VehicleHistoryDialog({
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/vehicles/${vehicleId}/assignments`);
+      const response = await fetch(
+        `/api/vehicles/immatriculation/${encodeURIComponent(vehicleImmatriculation)}/assignments`,
+      );
       if (!response.ok) {
         throw new Error("Erreur lors du chargement de l'historique");
       }
       const data = await response.json();
-      setAssignments(data);
+      // Sort by assigned_at descending (most recent first)
+      const sortedData = Array.isArray(data)
+        ? data.sort(
+            (a: VehicleAssignment, b: VehicleAssignment) =>
+              new Date(b.assigned_at).getTime() -
+              new Date(a.assigned_at).getTime(),
+          )
+        : [];
+      setAssignments(sortedData);
     } catch (err) {
       console.error("Error fetching assignments:", err);
       setError("Impossible de charger l'historique des interventions");
@@ -163,7 +196,7 @@ export function VehicleHistoryDialog({
                   {activeAssignments.map((assignment) => (
                     <div
                       key={assignment.vehicle_assignment_id}
-                      className="p-4 border border-orange-200 bg-orange-50/50 rounded-lg space-y-2"
+                      className="p-4 border border-orange-200 bg-orange-50/50 rounded-lg space-y-3"
                     >
                       <div className="flex items-center justify-between">
                         <Badge className="bg-orange-100 text-orange-700 border-orange-200">
@@ -173,10 +206,33 @@ export function VehicleHistoryDialog({
                           {formatDuration(assignment.assigned_at, null)}
                         </span>
                       </div>
+                      {/* Phase type */}
+                      {assignment.phase_type && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Shield className="w-3 h-3 text-orange-600" />
+                          <span className="font-medium">
+                            {assignment.phase_type.label ||
+                              assignment.phase_type.code}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="w-3 h-3" />
-                        <span>Début: {formatDate(assignment.assigned_at)}</span>
+                        <span>Assigné: {formatDate(assignment.assigned_at)}</span>
                       </div>
+                      {assignment.validated_at && (
+                        <div className="flex items-center gap-2 text-sm text-green-600">
+                          <CheckCircle className="w-3 h-3" />
+                          <span>
+                            Validé: {formatDate(assignment.validated_at)}
+                          </span>
+                        </div>
+                      )}
+                      {assignment.notes && (
+                        <p className="text-xs text-muted-foreground italic border-l-2 border-orange-200 pl-2">
+                          {assignment.notes}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -191,7 +247,7 @@ export function VehicleHistoryDialog({
                   {completedAssignments.map((assignment) => (
                     <div
                       key={assignment.vehicle_assignment_id}
-                      className="p-4 border rounded-lg space-y-2 hover:bg-muted/30 transition-colors"
+                      className="p-4 border rounded-lg space-y-3 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <Badge
@@ -209,18 +265,41 @@ export function VehicleHistoryDialog({
                           )}
                         </span>
                       </div>
+                      {/* Phase type */}
+                      {assignment.phase_type && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Shield className="w-3 h-3 text-muted-foreground" />
+                          <span>
+                            {assignment.phase_type.label ||
+                              assignment.phase_type.code}
+                          </span>
+                        </div>
+                      )}
                       <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          <span>{formatDate(assignment.assigned_at)}</span>
+                          <span>Assigné: {formatDate(assignment.assigned_at)}</span>
                         </div>
                         {assignment.unassigned_at && (
                           <div className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            <span>{formatDate(assignment.unassigned_at)}</span>
+                            <span>Fin: {formatDate(assignment.unassigned_at)}</span>
                           </div>
                         )}
                       </div>
+                      {assignment.validated_at && (
+                        <div className="flex items-center gap-2 text-xs text-green-600">
+                          <CheckCircle className="w-3 h-3" />
+                          <span>
+                            Validé le {formatDate(assignment.validated_at)}
+                          </span>
+                        </div>
+                      )}
+                      {assignment.notes && (
+                        <p className="text-xs text-muted-foreground italic border-l-2 border-muted pl-2">
+                          {assignment.notes}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
