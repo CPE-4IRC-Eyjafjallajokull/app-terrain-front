@@ -555,9 +555,6 @@ export function TerrainDashboard({ vehicle, onBack }: TerrainDashboardProps) {
     return null;
   })();
 
-    return null;
-  })();
-
   // Destination label for the map
   const destinationLabel = vehicleIsReturning
     ? currentVehicle.base_interest_point?.name || "Caserne"

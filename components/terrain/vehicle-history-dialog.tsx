@@ -218,7 +218,9 @@ export function VehicleHistoryDialog({
                       )}
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="w-3 h-3" />
-                        <span>Assigné: {formatDate(assignment.assigned_at)}</span>
+                        <span>
+                          Assigné: {formatDate(assignment.assigned_at)}
+                        </span>
                       </div>
                       {assignment.validated_at && (
                         <div className="flex items-center gap-2 text-sm text-green-600">
@@ -278,12 +280,16 @@ export function VehicleHistoryDialog({
                       <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          <span>Assigné: {formatDate(assignment.assigned_at)}</span>
+                          <span>
+                            Assigné: {formatDate(assignment.assigned_at)}
+                          </span>
                         </div>
                         {assignment.unassigned_at && (
                           <div className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            <span>Fin: {formatDate(assignment.unassigned_at)}</span>
+                            <span>
+                              Fin: {formatDate(assignment.unassigned_at)}
+                            </span>
                           </div>
                         )}
                       </div>
